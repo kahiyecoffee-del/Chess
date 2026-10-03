@@ -5,7 +5,10 @@
 import { t } from '../../game/i18n';
 import { WORLD_SIZE, World, world, worldOf } from '../../game/worlds';
 import { icon } from './icons';
-import { Item, drawGround, drawItem, drawPath, layoutItems, rng, shade } from './mapPainter';
+import {
+  WorldLayout, ambientKind, drawBridges, drawDetails, drawGround, drawItem, drawPath, drawWater, layoutWorld, occupied, rng,
+  samplePath, shade,
+} from './mapPainter';
 
 const GAP = 96; // iki düğüm arası dikey mesafe (px)
 const PAD = 80; // bölüm alt boşluğu
@@ -33,8 +36,10 @@ function nodeY(indexInWorld: number): number {
 interface SectionData {
   info: World;
   width: number;
-  items: Item[];
-  pts: [number, number][];
+  layout: WorldLayout;
+  nodes: [number, number][];
+  dense: [number, number][];
+  avoid: (x: number, y: number) => boolean;
 }
 
 export class MapScreen {
@@ -139,16 +144,11 @@ export class MapScreen {
       const next = levels[levels.length - 1] + 1;
       pts.push([(nodeX(next) / 100) * width, nodeY(WORLD_SIZE) - 10]);
     }
-    const pathX = (y: number): number => {
-      for (let i = 1; i < pts.length; i++) {
-        const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
-        if ((y <= y0 && y >= y1) || (y >= y0 && y <= y1)) return x0 + ((y - y0) / (y1 - y0 || 1)) * (x1 - x0);
-      }
-      return width / 2;
-    };
-    const items = layoutItems(info.theme, info.index * 7919 + 17, width, SECTION_HEIGHT, pathX)
-      .filter((it) => it.y > BANNER + 20 || Math.abs(it.x - width / 2) > 150);
-    this.data.set(w, { info, width, items, pts });
+    const dense = samplePath(pts);
+    // Dünya başlığının çevresini boş bırak.
+    const keepOut = (x: number, y: number) => y < BANNER + 40 && Math.abs(x - width / 2) < 170;
+    const layout = layoutWorld(info.theme, info.index * 7919 + 17, width, SECTION_HEIGHT, dense, keepOut);
+    this.data.set(w, { info, width, layout, nodes: pts, dense, avoid: occupied(layout, dense) });
 
     section.style.setProperty('--accent', info.theme.accent);
     section.style.setProperty('--accent-deep', shade(info.theme.accent, -0.35));
@@ -163,7 +163,7 @@ export class MapScreen {
     }
     const nodes = document.createElement('div');
     nodes.className = 'world-nodes';
-    section.replaceChildren(...tiles, this.banner(info), nodes);
+    section.replaceChildren(...tiles, this.ambient(info, width), this.banner(info), nodes);
     for (const c of tiles) this.tileObserver.observe(c);
     this.refreshNodes(w);
   }
@@ -187,7 +187,8 @@ export class MapScreen {
     g.scale(dpr, dpr);
     g.translate(0, -y0);
     const th = d.info.theme;
-    drawGround(g, th, d.info.index + 1, d.width, SECTION_HEIGHT, y0, y0 + h);
+    const y1 = y0 + h;
+    drawGround(g, th, d.info.index + 1, d.width, SECTION_HEIGHT, y0, y1);
     if (y0 < SKY) {
       const sky = g.createLinearGradient(0, 0, 0, SKY);
       sky.addColorStop(0, th.skyTop);
@@ -196,9 +197,38 @@ export class MapScreen {
       g.fillStyle = sky;
       g.fillRect(0, 0, d.width, SKY);
     }
-    drawPath(g, th, d.pts);
+    drawWater(g, th, d.layout, y0, y1);
+    drawDetails(g, th, d.info.index + 3, d.width, y0, y1, d.avoid);
+    drawPath(g, th, d.nodes, d.dense, d.info.index * 101 + 7, y0, y1);
+    drawBridges(g, d.layout, y0, y1);
     const r = rng(d.info.index * 13 + y0);
-    for (const it of d.items) if (it.y > y0 - 10 && it.y - it.s * 1.8 < y0 + h) drawItem(g, it, th, r);
+    for (const it of d.layout.items) if (it.y > y0 - 10 && it.y - it.s * 1.9 < y1) drawItem(g, it, th, r);
+  }
+
+  /** Hareketli öğeler: uçan kuşlar, bulut gölgeleri, kar, yıldız parıltısı… (CSS ile, çizim maliyeti yok). */
+  private ambient(info: World, width: number): HTMLElement {
+    const box = document.createElement('div');
+    const kind = ambientKind(info.theme.key);
+    box.className = `ambient ambient-${kind}`;
+    const r = rng(info.index * 31 + 3);
+    const count = kind === 'birds' ? 26 : kind === 'snow' ? 140 : kind === 'twinkle' ? 90 : 60;
+    let html = '';
+    for (let i = 0; i < count; i++) {
+      const y = Math.round(r() * SECTION_HEIGHT);
+      const x = Math.round(r() * width);
+      const delay = (r() * -30).toFixed(1);
+      const dur = (kind === 'birds' ? 16 + r() * 14 : kind === 'snow' ? 6 + r() * 6 : 3 + r() * 5).toFixed(1);
+      html += `<i style="top:${y}px;left:${x}px;animation-delay:${delay}s;animation-duration:${dur}s"></i>`;
+    }
+    // Gündüz dünyalarında süzülen bulut gölgeleri
+    if (kind === 'birds') {
+      for (let i = 0; i < 10; i++) {
+        const y = Math.round(r() * SECTION_HEIGHT);
+        html += `<b style="top:${y}px;animation-delay:${(r() * -60).toFixed(1)}s;animation-duration:${(45 + r() * 30).toFixed(1)}s"></b>`;
+      }
+    }
+    box.innerHTML = html;
+    return box;
   }
 
   private banner(info: World): HTMLElement {

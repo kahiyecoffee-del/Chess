@@ -5,11 +5,11 @@
 //            content/puzzles/remote/pack-XXX.json  (sonradan indirilecek fazlalar)
 //            content/puzzles/REPORT.md             (dağılım raporu)
 
-import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Puzzle, PuzzlePack, toRow, validatePuzzle } from '../../src/core/puzzle';
-import { primaryTheme } from './themes';
+import { orderByDifficulty, worldAverages } from './curve';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const OUT = join(ROOT, 'content/puzzles');
@@ -19,12 +19,12 @@ function arg(name: string, fallback: string): string {
   return i >= 0 ? process.argv[i + 1] : fallback;
 }
 
-const EASY_LEVELS = 50; // ilk seviyeler: yalnızca çok kolay mat-in-1 ve korunmasız taş
-const EASY_MAX_RATING = 900;
 const WORLD_SIZE = 100;
 
 function load(): Puzzle[] {
-  const dir = join(OUT, 'raw');
+  const rated = join(OUT, 'raw', 'rated');
+  const dir = existsSync(rated) && readdirSync(rated).some((f) => f.endsWith('.jsonl')) ? rated : join(OUT, 'raw');
+  console.log(`reading ${dir === rated ? 'measured (re-rated)' : 'raw'} puzzles`);
   const byPosition = new Map<string, Puzzle>();
   let invalid = 0;
   for (const file of readdirSync(dir).filter((f) => f.endsWith('.jsonl')).sort()) {
@@ -32,6 +32,7 @@ function load(): Puzzle[] {
       if (!line.trim()) continue;
       let p: Puzzle;
       try { p = JSON.parse(line) as Puzzle; } catch { invalid++; continue; }
+      delete (p as Puzzle & { features?: unknown }).features;
       if (validatePuzzle(p)) { invalid++; continue; }
       const key = p.fen.split(' ').slice(0, 4).join(' ') + p.moves[0];
       if (!byPosition.has(key)) byPosition.set(key, p);
@@ -39,59 +40,6 @@ function load(): Puzzle[] {
   }
   console.log(`loaded ${byPosition.size} unique puzzles (${invalid} invalid skipped)`);
   return [...byPosition.values()];
-}
-
-/**
- * Zorluk eğrisi: ilk 50 seviye çok kolay; sonra derece dağılımının yüzdelik dilimlerinde
- * yavaşça yükselir. Her dünya (100 seviye) kendi içinde hafif bir testere dişi çizer:
- * dünya başı biraz rahatlar, sonuna doğru zorlaşır.
- */
-function order(pool: Puzzle[], count: number): Puzzle[] {
-  const sorted = [...pool].sort((a, b) => a.rating - b.rating);
-  const used = new Uint8Array(sorted.length);
-  const result: Puzzle[] = [];
-  const recent: string[] = [];
-
-  const easy = sorted
-    .map((p, i) => ({ p, i }))
-    .filter(({ p }) => p.rating <= EASY_MAX_RATING && (p.themes.includes('mateIn1') || p.themes.includes('hangingPiece')));
-  // Mat-in-1 ve korunmasız taşı dönüşümlü ver.
-  const mates = easy.filter((e) => e.p.themes.includes('mateIn1'));
-  const loose = easy.filter((e) => !e.p.themes.includes('mateIn1'));
-  for (let k = 0; k < EASY_LEVELS && (mates.length || loose.length); k++) {
-    const src = (k % 3 === 2 && loose.length) || !mates.length ? loose : mates;
-    const { p, i } = src.shift()!;
-    used[i] = 1;
-    result.push(p);
-  }
-
-  const n = sorted.length;
-  const rest = count - result.length;
-  for (let k = 0; k < rest; k++) {
-    const level = result.length + 1;
-    const progress = k / Math.max(1, rest - 1);
-    const saw = (((level - 1) % WORLD_SIZE) / WORLD_SIZE - 0.5) * 0.06;
-    const q = Math.min(0.995, Math.max(0, 0.08 + 0.9 * Math.pow(progress, 0.85) + saw));
-    let idx = Math.floor(q * (n - 1));
-    // En yakın kullanılmamış bulmacayı bul; son iki temayla aynı olmayanı tercih et.
-    let best = -1;
-    for (let r = 0; r < n && best < 0; r++) {
-      for (const j of [idx - r, idx + r]) {
-        if (j < 0 || j >= n || used[j]) continue;
-        const theme = primaryTheme(sorted[j].themes);
-        if (r < 40 && recent.includes(theme)) continue;
-        best = j;
-        break;
-      }
-    }
-    if (best < 0) break;
-    idx = best;
-    used[idx] = 1;
-    result.push(sorted[idx]);
-    recent.push(primaryTheme(sorted[idx].themes));
-    if (recent.length > 2) recent.shift();
-  }
-  return result;
 }
 
 function writePacks(dir: string, puzzles: Puzzle[], size: number, offset: number): number {
@@ -127,7 +75,10 @@ function report(levels: Puzzle[], remote: number): string {
 const embedded = Number(arg('embedded', '20000'));
 const packSize = Number(arg('pack-size', '1000'));
 const pool = load();
-const levels = order(pool, Math.min(embedded, pool.length));
+const levels = orderByDifficulty(pool, Math.min(embedded, pool.length));
+const averages = worldAverages(levels, WORLD_SIZE);
+const drops = averages.filter((a, i) => i > 0 && a < averages[i - 1]).length;
+console.log(`world averages: ${averages.slice(0, 5).map(Math.round).join(', ')} … ${averages.slice(-3).map(Math.round).join(', ')}; drops: ${drops}`);
 const chosen = new Set(levels);
 const leftovers = pool.filter((p) => !chosen.has(p)).sort((a, b) => a.rating - b.rating);
 const packs = writePacks(join(OUT, 'levels'), levels, packSize, 0);
