@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Checkmate Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Figtree:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="/src/styles.css">
+</head>
+<body>
+<div id="app">
+  <canvas id="board" aria-label="Chess board"></canvas>
+
+  <header class="hud-top">
+    <div class="level-chip">
+      <span class="eyebrow" data-t="levelLabel">Level</span>
+      <strong id="level-num" class="level-num">1</strong>
+    </div>
+    <div class="goal">
+      <div id="goal-text" class="goal-text">Checkmate in 1 move</div>
+      <div id="side-text" class="side-text"><span id="side-swatch" class="swatch"></span><span id="side-label">You play White</span></div>
+    </div>
+    <button id="btn-levels" class="icon-btn" type="button" aria-label="Levels">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/></svg>
+    </button>
+  </header>
+
+  <div id="status" class="status" role="status" aria-live="polite">Your move</div>
+
+  <footer class="hud-bottom">
+    <button id="btn-retry" class="ghost-btn" type="button">Retry</button>
+    <div id="move-progress" class="move-progress" aria-label="Moves solved"></div>
+  </footer>
+
+  <section id="result" class="sheet" hidden>
+    <div class="sheet-card result-card">
+      <div class="crest" aria-hidden="true">♚</div>
+      <h2 id="result-title" class="sheet-title">Solved!</h2>
+      <p id="result-detail" class="sheet-detail">Solved with no mistakes</p>
+      <button id="btn-next" class="primary-btn" type="button">Next level</button>
+      <button id="btn-result-retry" class="ghost-btn" type="button">Retry</button>
+    </div>
+  </section>
+
+  <section id="levels" class="sheet" hidden>
+    <div class="sheet-card levels-card">
+      <div class="sheet-head">
+        <h2 id="levels-title" class="sheet-title">Choose a level</h2>
+        <button id="btn-levels-close" class="icon-btn" type="button" aria-label="Close">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M6.4 5 12 10.6 17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6l5.6-5.6L5 6.4z"/></svg>
+        </button>
+      </div>
+      <div id="level-grid" class="level-grid"></div>
+      <p id="credits" class="credits"></p>
+    </div>
+  </section>
+
+  <div id="promo" class="sheet promo" hidden>
+    <div class="sheet-card promo-card">
+      <p id="promo-title" class="eyebrow">Promote to</p>
+      <div class="promo-row">
+        <button type="button" data-promo="5" aria-label="Queen">♛</button>
+        <button type="button" data-promo="4" aria-label="Rook">♜</button>
+        <button type="button" data-promo="3" aria-label="Bishop">♝</button>
+        <button type="button" data-promo="2" aria-label="Knight">♞</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>

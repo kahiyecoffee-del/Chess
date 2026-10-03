@@ -15,17 +15,17 @@ Sen bu projede baş geliştiricimsin. Benimle birlikte Google Play'e (sonra App 
 
 ## 2. Bulmaca içeriği ("sınırsız seviye")
 
-- Kaynak: **Lichess açık bulmaca veritabanı** (CC0 lisanslı, milyonlarca derecelendirilmiş bulmaca). İndirme: https://database.lichess.org/#puzzles
-- CSV formatı: `PuzzleId, FEN, Moves, Rating, RatingDeviation, Popularity, NbPlays, Themes, GameUrl, OpeningTags`
-  - **Dikkat:** FEN, rakibin hamlesinden önceki pozisyondur. `Moves` içindeki **ilk hamle rakibin hamlesidir** (animasyonla oynatılır), oyuncu ikinci hamleden itibaren çözer. Çok hamleli çözümlerde rakip cevapları otomatik oynanır.
-- **Veri hattı (Python script'i, `tools/` klasöründe):**
-  1. Veritabanını filtrele: yüksek popülerlik, düşük RatingDeviation, yeterli NbPlays.
-  2. Zorluğa göre sırala ve **kademeli zorluk eğrisi** kur (ilk 50 seviye çok kolay: mat-in-1, çatal vb.).
-  3. Temalara göre etiketle (mateIn1, mateIn2, fork, pin, skewer, sacrifice, endgame…).
-  4. Kompakt bir formata çevir (ör. sıkıştırılmış JSON veya SQLite) ve uygulamaya **ilk ~20.000 bulmacayı** göm.
-  5. Sonraki paketleri uzaktan indirilebilir şekilde hazırla (Aşama 4: Firebase Storage). Böylece uygulama küçük kalır, seviye sayısı pratikte sınırsız olur.
-- Uygulama içinde: kural motoru ile **her bulmacayı yükleme sırasında doğrula** (geçerli FEN, geçerli hamleler). Hatalı olanı atla ve kaydet.
-- **Lichess'e kaynak olarak teşekkür** ayarlar/hakkında ekranında yer alsın (CC0 zorunlu kılmasa da).
+> **Karar (2026-10-03):** Dış veri kaynağı kullanılmıyor. Lichess veritabanı yerine tüm bulmacalar **kendi motorumuzla sıfırdan üretilir**.
+
+- **Üretici (`tools/puzzlegen/`, TypeScript, oyunla aynı kural motorunu kullanır):**
+  1. Kendi arama motorumuz "gürültülü" oyunlar oynar (rastgele açılış + sıcaklıklı hamle seçimi).
+  2. Rakip bir hata yaptığında oluşan pozisyonda arar: **zorunlu mat (1–3 hamle)** veya **tek kazandıran taktik** (en iyi hamle ikinciden ≥150 cp iyi, kazanç ≥200 cp, basit geri alma değil).
+  3. Çözüm tek olmalı (son hamledeki alternatif matlar hariç); aksi halde bulmaca atılır.
+  4. Temaları otomatik etiketler (mateIn1/2/3, fork, pin, skewer, discoveredAttack, hangingPiece, sacrifice, promotion, backRankMate, smotheredMate, endgame…) ve sezgisel bir zorluk puanı verir.
+  5. `build-levels.ts` tekrar doğrular, tekilleştirir, **kademeli zorluk eğrisi** kurar (ilk 50 seviye çok kolay: mat-in-1 ve korunmasız taş) ve 1000'lik paketlere böler: `content/puzzles/levels/` (gömülü ~20.000) ve `content/puzzles/remote/` (sonradan indirilecek fazlalar).
+- Format (Lichess ile uyumlu mantık): FEN rakibin hamlesinden önceki pozisyondur; `moves[0]` rakibin hamlesidir, oyuncu `moves[1]`den çözer.
+- Uygulama her bulmacayı yüklerken kural motoruyla **yeniden doğrular**; hatalı olanı atlar ve kaydeder.
+- Zorluk puanları sezgiseldir; Aşama 4'te oyuncu verisiyle (çözülme oranı) yeniden ayarlanacak.
 
 ## 3. Oyun modları
 
@@ -73,26 +73,26 @@ Sen bu projede baş geliştiricimsin. Benimle birlikte Google Play'e (sonra App 
 
 ## 6. Teknik yapı
 
-- **Motor: Unity 6 LTS, C#, URP (mobil).** 3D, animasyon ve reklam SDK'ları için en olgun seçenek. Sahne ve prefab kurulumunda editörde yapmam gereken adımlar olursa bana **adım adım ve ekran ekran** anlat; mümkün olan her şeyi kodla (editor script'leri ile) otomatikleştir.
-  - Alternatif olarak Godot 4'ü değerlendir ve ilk planında artı/eksiğini tek tabloyla göster; kararı birlikte verelim.
-- **Satranç kural motoru:** Kendin yaz veya lisansı uygun (MIT/BSD) bir C# kütüphanesi kullan. Gerekenler: FEN okuma, yasal hamle üretimi, şah/mat/pat, terfi, rok, geçerken alma, UCI hamle formatı. **Kapsamlı birim testleri zorunlu** (perft testleri dahil).
+- **Motor (karar 2026-10-03): TypeScript + Three.js (3D) + Vite; Android paketi için Capacitor (Aşama 3–5).**
+  Unity yerine seçildi çünkü geliştirme ve test tamamen bilgisayarsız yapılabiliyor: oyun her aşamada bir web önizleme linki olarak paylaşılır, telefonda tarayıcıdan oynanır. AdMob/UMP, Firebase ve Play Billing için olgun Capacitor eklentileri var.
+- **Satranç kural motoru:** Sıfırdan yazıldı (`src/core/chess`). Gerekenler: FEN okuma, yasal hamle üretimi, şah/mat/pat, terfi, rok, geçerken alma, UCI hamle formatı. **Kapsamlı birim testleri zorunlu** (perft testleri dahil).
 - **Stockfish'i uygulamaya gömme** (GPL lisansı). Bulmaca çözümleri veritabanından gelir, motor gerekmez.
-- Mimari: `Core` (kural motoru, bulmaca modeli, ekonomi), `Game` (seviye akışı, ilerleme), `Presentation` (3D tahta, animasyonlar, UI), `Services` (ads, IAP, save, analytics, remote config, içerik indirme).
+- Mimari: `src/core` (kural motoru, bulmaca modeli, analiz, ekonomi), `src/game` (seviye akışı, ilerleme, metinler), `src/presentation` (3D tahta, animasyonlar, girdi), `src/services` (ads, IAP, save, analytics, remote config, içerik indirme — Aşama 3–4).
 - Kayıt: yerel JSON, sürüm numarası ve migrasyon. Sonra Google Play Games ile bulut kaydı (Aşama 4).
 - Performans: orta seviye Android'de 60 FPS, ilk açılış < 5 sn, APK/AAB hedef < 100 MB.
-- Dil: İngilizce varsayılan; Türkçe, İspanyolca, Portekizce, Hintçe sonradan (Unity Localization). Tüm metinler çeviri tablolarında.
+- Dil: İngilizce varsayılan; Türkçe, İspanyolca, Portekizce, Hintçe sonradan. Tüm metinler `src/game/i18n.ts` tablolarında.
 
 ## 7. 3D görsel ve animasyon
 
 - Kamera: hafif eğik, tahta ekranı dolduracak şekilde; dikey (portrait) oynanış. Oyuncu tahtayı 2 parmakla hafifçe döndürebilir, çift dokunuşla sıfırlanır.
 - Kontrol: taşa dokun → yasal kareler parlar → hedefe dokun. Sürükle-bırak da desteklensin.
-- Animasyonlar (DOTween veya eşdeğeri):
+- Animasyonlar (kendi küçük tween sistemimiz, `src/presentation/tween.ts`):
   - Taş hareketi: hafif yay çizen, ağırlıklı iniş
   - Alma: alınan taş fiziksel olarak devrilip tahtadan düşer
   - Şah: kral etrafında kırmızı nabız
   - **Şah mat:** yavaş çekim, kamera yakınlaşması, kral devrilir, parçacık efekti
   - Yanlış hamle: taş geri kayar, hafif titreşim
-- Asset'ler: İlk aşamada basit low-poly taşları **kodla veya Unity primitive'leriyle** oluştur. Sonra Asset Store'dan lisanslı modeller ekleyeceğiz; asset'leri `ScriptableObject` tabanlı "set" sistemiyle değiştirilebilir yap (kozmetik mağaza da bunu kullanacak).
+- Asset'ler: İlk aşamada low-poly taşlar **tamamen kodla** üretilir (`pieces.ts`). Taş ve tahta görünümü veri tabanlı "set" tanımlarıyla değiştirilebilir (`sets.ts`; kozmetik mağaza da bunu kullanacak).
 - Ses ve dokunsal geri bildirim: taş sesi, mat fanfarı, haptic.
 
 ## 8. Analitik ve uzaktan ayar (Aşama 4)
@@ -103,7 +103,7 @@ Firebase Analytics + Remote Config + Crashlytics. Olaylar: seviye başlangıç/b
 
 | Aşama | İçerik | Bittiğinde |
 |---|---|---|
-| 0. Kurulum | Unity projesi, klasör yapısı, git + LFS, URP mobil ayarları | Boş sahne Android'de açılıyor |
+| 0. Kurulum | Proje iskeleti (TS + Vite + Three.js), klasör yapısı, testler, CI | Web önizlemesi telefonda açılıyor |
 | 1. Çekirdek | Kural motoru + testler, veri hattı script'i, 3D tahta, dokunmatik kontrol, bulmaca çözme akışı, temel animasyonlar | İlk 30 seviye baştan sona oynanabiliyor |
 | 2. Oyun döngüsü | Harita, yıldızlar, altın, ipucu ve geri alma, seviye sonu ekranı, kayıt, günlük bulmaca | İlk dünya tamamen oynanabilir |
 | 3. Ekonomi ve para kazanma | Kozmetik mağaza ve set sistemi, can sistemi (opsiyonel), IAdService (mock → test), UMP onayı, IAP iskeleti, ekonomi simülasyonu | Tüm reklam anları test reklamla çalışıyor |
@@ -123,3 +123,16 @@ Firebase Analytics + Remote Config + Crashlytics. Olaylar: seviye başlangıç/b
 ---
 
 **İlk görev:** Bu brifi oku, belirsiz gördüğün en önemli 3–5 noktayı bana sor, Unity ve Godot karşılaştırmasını tek tabloyla göster, sonra Aşama 0 ve Aşama 1 için planını çıkar.
+
+---
+
+## Karar günlüğü
+
+| Tarih | Karar | Neden |
+|---|---|---|
+| 2026-10-03 | Unity yerine TypeScript + Three.js + Capacitor | Kullanıcının bilgisayarı ve Android cihazı yok; web önizlemesi her yerden test edilebiliyor. |
+| 2026-10-03 | Kural motoru sıfırdan yazıldı | Lisans riski yok; perft testleriyle doğrulandı. |
+| 2026-10-03 | Bulmacalar sıfırdan üretiliyor, dış veri yok | Kullanıcı isteği. Kendi motorumuzla üretim + doğrulama. |
+| 2026-10-03 | Takılan oyuncuya bulmaca değiştirilmez; ipucu + reklam teklif edilir | Kullanıcı onayı. |
+| 2026-10-03 | Son hamlede her mat doğru sayılır; ara hamlelerde tek çözüm | Varsayılan (kullanıcı itiraz etmedi). |
+| 2026-10-03 | Paket adı geçici: `com.checkmatequest.app` | Şirket kurulumu sürüyor; Aşama 5'ten önce kesinleşecek. |
