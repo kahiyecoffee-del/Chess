@@ -56,8 +56,7 @@ Sen bu projede baş geliştiricimsin. Benimle birlikte Google Play'e (sonra App 
 ## 5. Para kazanma
 
 **Seviye arası (interstitial) reklam kuralları:**
-- İlk 8 seviye hiç yok.
-- Sonra **her 3 seviyede bir**, en az 90 saniye aralıkla. Frekans Remote Config ile ayarlanabilir.
+- **Her 5 tamamlanan seviyede bir** (kullanıcı kararı, 2026-10-03), en az 90 saniye aralıkla. Sayaç kayıtta tutulur. Sıklık `config/economy.json` → `interstitial` (Remote Config ile ayarlanabilir olacak).
 - Sadece seviye bitiş ekranından sonra; asla bulmaca ortasında değil.
 
 **Ödüllü reklam anları:**
@@ -143,4 +142,5 @@ Firebase Analytics + Remote Config + Crashlytics. Olaylar: seviye başlangıç/b
 | 2026-10-03 | Seviye başına 3 hata hakkı; bitince reklamla +3 hak veya vazgeç (−1 can); 5 can, 30 dk'da 1 dolum | Kullanıcı isteği. Sayılar `config/economy.json`'da. |
 | 2026-10-03 | Arayüz modern koyu cam stiline geçti; ayarlar (müzik, dil), 35 dil, üretilen arka plan müziği eklendi | Kullanıcı isteği. |
 | 2026-10-03 | Zorluk motorla ölçülüyor; macera yolu seviyeyle orantılı doğrusal rampa (şu an ~4.460 seviye, zor üretimle uzuyor) | Kullanıcı isteği: seviyeler ilerledikçe o oranda zorlaşsın. |
+| 2026-10-03 | Seviye arası reklam her 5 seviyede bir (eski kural: ilk 8 yok, sonra her 3); 90 sn alt sınır korundu | Kullanıcı isteği. |
 | 2026-10-03 | Reklamlar şimdilik `MockAdService` (ekranda "Test ad"); AdMob test ID'leri Aşama 3'te | Brifteki IAdService planı. |

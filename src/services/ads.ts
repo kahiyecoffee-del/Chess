@@ -55,5 +55,42 @@ export class MockAdService implements IAdService {
     });
   }
 
-  async showInterstitial(): Promise<void> {}
+  /** Sahte seviye arası reklam: geri sayım bitince kapatılabilir. */
+  showInterstitial(seconds = this.seconds): Promise<void> {
+    const labels = this.labels();
+    return new Promise((resolve) => {
+      const root = document.createElement('div');
+      root.className = 'mock-ad interstitial';
+      root.setAttribute('role', 'dialog');
+      root.setAttribute('aria-label', labels.title);
+      root.innerHTML = `
+        <button class="mock-ad-close" type="button" aria-label="${labels.close}" disabled>${seconds}</button>
+        <div class="mock-ad-body">
+          <div class="mock-ad-tag">${labels.title}</div>
+          <div class="mock-ad-art" aria-hidden="true">♞</div>
+          <div class="mock-ad-bar"><i></i></div>
+          <div class="mock-ad-placement">interstitial</div>
+        </div>`;
+      document.body.appendChild(root);
+      const close = root.querySelector<HTMLButtonElement>('.mock-ad-close')!;
+      const bar = root.querySelector<HTMLElement>('.mock-ad-bar i')!;
+      const started = performance.now();
+      const timer = setInterval(() => {
+        const t = (performance.now() - started) / 1000;
+        bar.style.width = `${Math.min(100, (t / seconds) * 100)}%`;
+        if (t < seconds) {
+          close.textContent = String(Math.ceil(seconds - t));
+          return;
+        }
+        clearInterval(timer);
+        close.disabled = false;
+        close.textContent = '×';
+      }, 100);
+      close.addEventListener('click', () => {
+        if (close.disabled) return;
+        root.remove();
+        resolve();
+      });
+    });
+  }
 }

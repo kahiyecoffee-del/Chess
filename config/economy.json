@@ -10,5 +10,11 @@
   "ads": {
     "rewardedLifeAmount": 1,
     "mockAdSeconds": 5
+  },
+  "interstitial": {
+    "enabled": true,
+    "everyLevels": 5,
+    "minSecondsBetween": 90,
+    "mockSeconds": 5
   }
 }

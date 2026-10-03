@@ -2,7 +2,10 @@
 
 import './styles.css';
 import { Color } from './core/chess';
-import { ECONOMY, addLives, loseLife, msToNextLife, settleLives, starsFor } from './core/economy';
+import {
+  ECONOMY, addLives, loseLife, markInterstitialShown, msToNextLife, recordLevelCompleted, settleLives, shouldShowInterstitial,
+  starsFor,
+} from './core/economy';
 import { Puzzle, PuzzlePack } from './core/puzzle';
 import { LOCALES, matchLanguage, setLanguage, t } from './game/i18n';
 import { LevelLibrary } from './game/levels';
@@ -189,6 +192,7 @@ function boot(): void {
       const stars = starsFor(mistakes);
       save.stars[level - 1] = Math.max(save.stars[level - 1] ?? 0, stars);
       if (level + 1 > save.unlocked && level < library.count) save.unlocked = level + 1;
+      save.interstitial = recordLevelCompleted(save.interstitial);
       persist();
       $('result-stars').innerHTML = [1, 2, 3].map((s) => icon.star(s <= stars ? 'on' : '')).join('');
       $('result-eyebrow').textContent = t('levelComplete', { n: level });
@@ -325,14 +329,22 @@ function boot(): void {
     }
   });
   $('btn-nolives-ok').addEventListener('click', () => ($('modal-nolives').hidden = true));
-  $('btn-next').addEventListener('click', () => {
+  /** Seviye sonu ekranından çıkarken: kural izin veriyorsa seviye arası reklam (asla bulmaca ortasında değil). */
+  let adShowing = false;
+  const leaveResult = async (then: () => void) => {
+    if (adShowing) return;
     $('modal-result').hidden = true;
-    startLevel(level + 1);
-  });
-  $('btn-result-map').addEventListener('click', () => {
-    $('modal-result').hidden = true;
-    showMap(playable());
-  });
+    if (shouldShowInterstitial(save.interstitial, now(), ECONOMY.interstitial)) {
+      adShowing = true;
+      await ads.showInterstitial(ECONOMY.interstitial.mockSeconds);
+      adShowing = false;
+      save.interstitial = markInterstitialShown(now());
+      persist();
+    }
+    then();
+  };
+  $('btn-next').addEventListener('click', () => void leaveResult(() => startLevel(level + 1)));
+  $('btn-result-map').addEventListener('click', () => void leaveResult(() => showMap(playable())));
 
   applyTexts();
   if (library.count === 0) {

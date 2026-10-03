@@ -61,6 +61,7 @@ describe('save migration', () => {
   it('creates a fresh save', () => {
     expect(migrate(null, null)).toEqual({
       version: 2, lives: { lives: 5, regenStart: null }, unlocked: 1, stars: [], settings: { music: true, language: null },
+      interstitial: { sinceLast: 0, lastShownAt: 0 },
     });
   });
   it('migrates the v0 last-level key', () => {
@@ -78,11 +79,44 @@ describe('save migration', () => {
     expect(s.settings).toEqual({ music: true, language: null });
     expect(s.unlocked).toBe(4);
   });
+  it('keeps and sanitises the interstitial counter', () => {
+    const s = migrate({ version: 2, lives: { lives: 5, regenStart: null }, unlocked: 1, stars: [], interstitial: { sinceLast: 3.7, lastShownAt: -5 } }, null);
+    expect(s.interstitial).toEqual({ sinceLast: 3, lastShownAt: 0 });
+  });
   it('keeps v2 settings', () => {
     const s = migrate({ version: 2, lives: { lives: 5, regenStart: null }, unlocked: 1, stars: [], settings: { music: false, language: 'tr' } }, null);
     expect(s.settings).toEqual({ music: false, language: 'tr' });
   });
   it('ignores garbage', () => {
     expect(migrate('nope', 'abc').unlocked).toBe(1);
+  });
+});
+
+import { freshInterstitial, markInterstitialShown, recordLevelCompleted, shouldShowInterstitial } from '../src/core/economy';
+
+describe('interstitial ads', () => {
+  const cfg = { enabled: true, everyLevels: 5, minSecondsBetween: 90, mockSeconds: 5 };
+  it('shows after every 5 completed levels', () => {
+    let s = freshInterstitial();
+    for (let i = 1; i <= 4; i++) {
+      s = recordLevelCompleted(s);
+      expect(shouldShowInterstitial(s, 1_000_000, cfg)).toBe(false);
+    }
+    s = recordLevelCompleted(s);
+    expect(shouldShowInterstitial(s, 1_000_000, cfg)).toBe(true);
+    s = markInterstitialShown(1_000_000);
+    expect(s.sinceLast).toBe(0);
+  });
+  it('waits at least 90 seconds between ads', () => {
+    let s = markInterstitialShown(0);
+    for (let i = 0; i < 5; i++) s = recordLevelCompleted(s);
+    expect(shouldShowInterstitial(s, 60_000, cfg)).toBe(false);
+    expect(shouldShowInterstitial(s, 90_000, cfg)).toBe(true);
+  });
+  it('can be switched off (config or no-ads purchase)', () => {
+    let s = freshInterstitial();
+    for (let i = 0; i < 5; i++) s = recordLevelCompleted(s);
+    expect(shouldShowInterstitial(s, 1e9, { ...cfg, enabled: false })).toBe(false);
+    expect(shouldShowInterstitial(s, 1e9, cfg, true)).toBe(false);
   });
 });

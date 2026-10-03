@@ -1,7 +1,7 @@
 // Yerel kayıt: sürüm numaralı JSON + migrasyon. Bulut kaydı (Play Games) Aşama 4'te.
 // Sürüm 0: yalnızca `cq.lastLevel`. Sürüm 1: can, kilit, yıldız. Sürüm 2: + ayarlar.
 
-import { ECONOMY, LivesState, fullLives } from '../core/economy';
+import { ECONOMY, InterstitialState, LivesState, freshInterstitial, fullLives } from '../core/economy';
 
 export const SAVE_VERSION = 2;
 const KEY = 'cq.save';
@@ -21,12 +21,15 @@ export interface SaveData {
   /** stars[seviye-1] = 0..3 */
   stars: number[];
   settings: Settings;
+  /** Seviye arası reklam sayacı (uygulama kapanıp açılınca sıfırlanmasın). */
+  interstitial: InterstitialState;
 }
 
 export const defaultSettings = (): Settings => ({ music: true, language: null });
 
 export const freshSave = (): SaveData => ({
   version: SAVE_VERSION, lives: fullLives(ECONOMY.lives), unlocked: 1, stars: [], settings: defaultSettings(),
+  interstitial: freshInterstitial(),
 });
 
 /** Eski veya bozuk veriyi güncel sürüme taşır. Bilinmeyen alanları atar. */
@@ -43,6 +46,10 @@ export function migrate(raw: unknown, legacyLastLevel: string | null): SaveData 
     if (version === 2 && r.settings && typeof r.settings === 'object') {
       if (typeof r.settings.music === 'boolean') data.settings.music = r.settings.music;
       if (typeof r.settings.language === 'string') data.settings.language = r.settings.language;
+    }
+    const ad = r.interstitial;
+    if (ad && typeof ad.sinceLast === 'number' && typeof ad.lastShownAt === 'number') {
+      data.interstitial = { sinceLast: Math.max(0, Math.floor(ad.sinceLast)), lastShownAt: Math.max(0, ad.lastShownAt) };
     }
     return data;
   }
