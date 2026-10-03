@@ -23,13 +23,15 @@ export interface SaveData {
   settings: Settings;
   /** Seviye arası reklam sayacı (uygulama kapanıp açılınca sıfırlanmasın). */
   interstitial: InterstitialState;
+  /** Son yazma zamanı (ms): iki kayıt birleşirken ayarlar ve canlar en yeniden alınır. */
+  updatedAt: number;
 }
 
 export const defaultSettings = (): Settings => ({ music: true, language: null });
 
 export const freshSave = (): SaveData => ({
   version: SAVE_VERSION, lives: fullLives(ECONOMY.lives), unlocked: 1, stars: [], settings: defaultSettings(),
-  interstitial: freshInterstitial(),
+  interstitial: freshInterstitial(), updatedAt: 0,
 });
 
 /** Eski veya bozuk veriyi güncel sürüme taşır. Bilinmeyen alanları atar. */
@@ -47,6 +49,7 @@ export function migrate(raw: unknown, legacyLastLevel: string | null): SaveData 
       if (typeof r.settings.music === 'boolean') data.settings.music = r.settings.music;
       if (typeof r.settings.language === 'string') data.settings.language = r.settings.language;
     }
+    if (typeof r.updatedAt === 'number' && r.updatedAt > 0) data.updatedAt = r.updatedAt;
     const ad = r.interstitial;
     if (ad && typeof ad.sinceLast === 'number' && typeof ad.lastShownAt === 'number') {
       data.interstitial = { sinceLast: Math.max(0, Math.floor(ad.sinceLast)), lastShownAt: Math.max(0, ad.lastShownAt) };
@@ -58,6 +61,27 @@ export function migrate(raw: unknown, legacyLastLevel: string | null): SaveData 
   return data;
 }
 
+/**
+ * İki kaydı birleştirir (cihazdaki ve buluttaki). İlerleme asla kaybolmasın diye
+ * açılan seviye ve yıldızlarda ikisinin en iyisi alınır; canlar, ayarlar ve reklam
+ * sayacı en son yazılan kayıttan gelir.
+ */
+export function mergeSaves(a: SaveData, b: SaveData): SaveData {
+  const newer = b.updatedAt > a.updatedAt ? b : a;
+  const len = Math.max(a.stars.length, b.stars.length);
+  return {
+    version: SAVE_VERSION,
+    lives: { ...newer.lives },
+    unlocked: Math.max(a.unlocked, b.unlocked),
+    stars: Array.from({ length: len }, (_, i) => Math.max(a.stars[i] ?? 0, b.stars[i] ?? 0)),
+    settings: { ...newer.settings },
+    interstitial: { ...newer.interstitial },
+    updatedAt: Math.max(a.updatedAt, b.updatedAt),
+  };
+}
+
+export const sameSave = (a: SaveData, b: SaveData): boolean => JSON.stringify(a) === JSON.stringify(b);
+
 export function loadSave(): SaveData {
   try {
     const text = localStorage.getItem(KEY);
@@ -68,6 +92,7 @@ export function loadSave(): SaveData {
 }
 
 export function writeSave(data: SaveData): void {
+  data.updatedAt = Date.now();
   try {
     localStorage.setItem(KEY, JSON.stringify(data));
   } catch {

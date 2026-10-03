@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { LivesState, addLives, fullLives, loseLife, msToNextLife, settleLives, starsFor } from '../src/core/economy';
-import { migrate } from '../src/game/save';
+import { freshSave, mergeSaves, migrate } from '../src/game/save';
 
 const cfg = { max: 5, regenMinutes: 30 };
 const MIN = 60_000;
@@ -61,7 +61,7 @@ describe('save migration', () => {
   it('creates a fresh save', () => {
     expect(migrate(null, null)).toEqual({
       version: 2, lives: { lives: 5, regenStart: null }, unlocked: 1, stars: [], settings: { music: true, language: null },
-      interstitial: { sinceLast: 0, lastShownAt: 0 },
+      interstitial: { sinceLast: 0, lastShownAt: 0 }, updatedAt: 0,
     });
   });
   it('migrates the v0 last-level key', () => {
@@ -118,5 +118,23 @@ describe('interstitial ads', () => {
     for (let i = 0; i < 5; i++) s = recordLevelCompleted(s);
     expect(shouldShowInterstitial(s, 1e9, { ...cfg, enabled: false })).toBe(false);
     expect(shouldShowInterstitial(s, 1e9, cfg, true)).toBe(false);
+  });
+});
+
+describe('save merge (device + cloud)', () => {
+  it('never loses progress and takes settings from the newer save', () => {
+    const device = { ...freshSave(), unlocked: 12, stars: [3, 1, 2], updatedAt: 100, settings: { music: false, language: 'tr' } };
+    const cloud = { ...freshSave(), unlocked: 9, stars: [2, 3, 2, 3], updatedAt: 200, settings: { music: true, language: 'de' } };
+    const m = mergeSaves(device, cloud);
+    expect(m.unlocked).toBe(12);
+    expect(m.stars).toEqual([3, 3, 2, 3]);
+    expect(m.settings).toEqual({ music: true, language: 'de' });
+    expect(m.updatedAt).toBe(200);
+  });
+  it('is symmetric for progress', () => {
+    const a = { ...freshSave(), unlocked: 5, stars: [1], updatedAt: 1 };
+    const b = { ...freshSave(), unlocked: 7, stars: [0, 2], updatedAt: 2 };
+    expect(mergeSaves(a, b).unlocked).toBe(mergeSaves(b, a).unlocked);
+    expect(mergeSaves(a, b).stars).toEqual(mergeSaves(b, a).stars);
   });
 });

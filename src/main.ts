@@ -10,13 +10,14 @@ import { Puzzle, PuzzlePack } from './core/puzzle';
 import { LOCALES, matchLanguage, setLanguage, t } from './game/i18n';
 import { LevelLibrary } from './game/levels';
 import { FlowUi, PuzzleFlow } from './game/puzzleFlow';
-import { SaveData, loadSave, writeSave } from './game/save';
+import { SaveData, loadSave, mergeSaves, migrate, sameSave, writeSave } from './game/save';
 import { world, worldOf } from './game/worlds';
 import { Board3D } from './presentation/board3d';
 import { icon, installIconDefs } from './presentation/ui/icons';
 import { MapScreen } from './presentation/ui/map';
 import { MockAdService } from './services/ads';
 import { MusicPlayer } from './services/music';
+import { CloudSave } from './services/cloudSave';
 
 // Macera yolunun tüm paketleri uygulamaya gömülü. Fazla bulmacalar (remote/) diğer modlar için.
 const packs = import.meta.glob<PuzzlePack>('../content/puzzles/levels/pack-*.json', { eager: true, import: 'default' });
@@ -37,7 +38,12 @@ function boot(): void {
   for (const key of Object.keys(packs).sort()) library.addPack(packs[key]);
 
   const save: SaveData = loadSave();
-  const persist = () => writeSave(save);
+  const cloud = new CloudSave();
+  /** Cihaza hemen, buluta kısa bir gecikmeyle (art arda değişiklikler tek yazmada) kaydeder. */
+  const persist = (immediate = false) => {
+    writeSave(save);
+    cloud.write(save, immediate);
+  };
   const now = () => Date.now();
   const lives = () => (save.lives = settleLives(save.lives, now(), ECONOMY.lives)).lives;
   const deviceLanguage = () => matchLanguage(navigator.languages?.length ? navigator.languages : [navigator.language]);
@@ -51,7 +57,11 @@ function boot(): void {
   music.setEnabled(save.settings.music);
   const unlockAudio = () => music.resume();
   window.addEventListener('pointerdown', unlockAudio, { capture: true });
-  document.addEventListener('visibilitychange', () => music.pauseForBackground(document.hidden));
+  document.addEventListener('visibilitychange', () => {
+    music.pauseForBackground(document.hidden);
+    if (document.hidden) persist(true); // oyundan çıkarken bekletmeden kaydet
+  });
+  window.addEventListener('pagehide', () => persist(true));
 
   // ---- Simgeler ----
   installIconDefs();
@@ -345,6 +355,24 @@ function boot(): void {
   };
   $('btn-next').addEventListener('click', () => void leaveResult(() => startLevel(level + 1)));
   $('btn-result-map').addEventListener('click', () => void leaveResult(() => showMap(playable())));
+
+  // Buluttaki kaydı al ve cihazdakiyle birleştir (ilerleme hangisinde fazlaysa o kalır).
+  void cloud.connect().then((remote) => {
+    if (!cloud.connected) return;
+    const merged = remote ? mergeSaves(save, migrate(remote, null)) : save;
+    const changed = !sameSave(merged, save);
+    const languageBefore = save.settings.language;
+    Object.assign(save, merged);
+    if (changed) {
+      writeSave(save);
+      if (save.settings.language !== languageBefore) setLanguage(save.settings.language ?? deviceLanguage());
+      music.setEnabled(save.settings.music);
+      applyTexts();
+      if (!$('screen-map').hidden) showMap();
+    }
+    // Bulutta hiç yoksa ya da cihazdaki daha ileriyse buluta yaz.
+    if (!remote || !sameSave(migrate(remote, null), save)) cloud.write(save, true);
+  });
 
   applyTexts();
   if (library.count === 0) {

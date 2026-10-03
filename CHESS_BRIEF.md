@@ -79,7 +79,7 @@ Sen bu projede baş geliştiricimsin. Benimle birlikte Google Play'e (sonra App 
 - **Satranç kural motoru:** Sıfırdan yazıldı (`src/core/chess`). Gerekenler: FEN okuma, yasal hamle üretimi, şah/mat/pat, terfi, rok, geçerken alma, UCI hamle formatı. **Kapsamlı birim testleri zorunlu** (perft testleri dahil).
 - **Stockfish'i uygulamaya gömme** (GPL lisansı). Bulmaca çözümleri veritabanından gelir, motor gerekmez.
 - Mimari: `src/core` (kural motoru, bulmaca modeli, analiz, ekonomi), `src/game` (seviye akışı, ilerleme, metinler), `src/presentation` (3D tahta, animasyonlar, girdi), `src/services` (ads, IAP, save, analytics, remote config, içerik indirme — Aşama 3–4).
-- Kayıt: yerel JSON, sürüm numarası ve migrasyon. Sonra Google Play Games ile bulut kaydı (Aşama 4).
+- Kayıt: yerel JSON, sürüm numarası ve migrasyon. Web önizlemesinde ayrıca kişiye özel bulut kaydı (artifact `db`, `src/services/cloudSave.ts`); açılışta cihaz ve bulut birleşir (ilerleme hangisinde fazlaysa). Android'de aynı arayüze Google Play Games kaydı gelecek (Aşama 4).
 - Performans: orta seviye Android'de 60 FPS, ilk açılış < 5 sn, APK/AAB hedef < 100 MB.
 - Dil: **35 dil** (en çok konuşulanlar; Arapça, Urduca, Farsça sağdan sola). Varsayılan cihaz dili, ayarlardan değiştirilebilir. Metinler `src/game/i18n.ts` + `src/game/locales/`. Yayından önce ana dil kontrolü önerilir.
 
@@ -143,4 +143,5 @@ Firebase Analytics + Remote Config + Crashlytics. Olaylar: seviye başlangıç/b
 | 2026-10-03 | Arayüz modern koyu cam stiline geçti; ayarlar (müzik, dil), 35 dil, üretilen arka plan müziği eklendi | Kullanıcı isteği. |
 | 2026-10-03 | Zorluk motorla ölçülüyor; macera yolu seviyeyle orantılı doğrusal rampa (şu an ~4.460 seviye, zor üretimle uzuyor) | Kullanıcı isteği: seviyeler ilerledikçe o oranda zorlaşsın. |
 | 2026-10-03 | Seviye arası reklam her 5 seviyede bir (eski kural: ilk 8 yok, sonra her 3); 90 sn alt sınır korundu | Kullanıcı isteği. |
+| 2026-10-03 | Önizlemede kayıt buluta da yazılıyor | Görüntüleyici tarayıcı deposunu sildiği için ilerleme kayboluyordu. |
 | 2026-10-03 | Reklamlar şimdilik `MockAdService` (ekranda "Test ad"); AdMob test ID'leri Aşama 3'te | Brifteki IAdService planı. |

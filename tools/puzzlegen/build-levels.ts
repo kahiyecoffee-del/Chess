@@ -32,6 +32,9 @@ function load(): Puzzle[] {
   if (dir === rated) {
     const raw = join(OUT, 'raw');
     files.push(...readdirSync(raw).filter((f) => f.startsWith('hard-') && f.endsWith('.jsonl')).map((f) => join(raw, f)));
+    // Depoda saklanan zor bulmacalar (raw/ git'e girmez; oturumlar arası kaybolmasın).
+    const kept = join(OUT, 'hard');
+    if (existsSync(kept)) files.push(...readdirSync(kept).filter((f) => f.endsWith('.jsonl')).map((f) => join(kept, f)));
   }
   for (const file of files.sort()) {
     for (const line of readFileSync(file, 'utf8').split('\n')) {
