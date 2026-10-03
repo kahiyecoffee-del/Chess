@@ -3,6 +3,7 @@
 // zorunlu mat ya da tek kazandıran taktik varsa bunu bulmacaya çevirir.
 //
 // Kullanım:  npm run gen:puzzles -- --target 22000 --workers 4
+//            Zor bulmaca modu: --min-rating 900 --prefix hard- --seed 777 (ölçülmüş zorluğu düşük olanlar atılır)
 // Çıktı:     content/puzzles/raw/worker-<n>.jsonl (birleştirme ve sıralama: build-levels.ts)
 
 import { spawn } from 'node:child_process';
@@ -15,6 +16,7 @@ import { Puzzle, validatePuzzle } from '../../src/core/puzzle';
 import { findMate, findTactic } from './detect';
 import { detectThemes } from './themes';
 import { estimateRating, hashString } from './rating';
+import { difficultyRating, measure } from './difficulty';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const RAW_DIR = join(ROOT, 'content/puzzles/raw');
@@ -56,9 +58,9 @@ function chooseMove(pos: Position, searcher: Searcher, temperature: number, rng:
   return moves[moves.length - 1];
 }
 
-function runWorker(id: number, quota: number, seed: number): void {
+function runWorker(id: number, quota: number, seed: number, minRating: number, prefix: string): void {
   mkdirSync(RAW_DIR, { recursive: true });
-  const outFile = join(RAW_DIR, `worker-${id}.jsonl`);
+  const outFile = join(RAW_DIR, `${prefix}${id}.jsonl`);
   const seen = new Set<string>();
   let found = 0;
   if (existsSync(outFile)) {
@@ -96,8 +98,11 @@ function runWorker(id: number, quota: number, seed: number): void {
       searcher.nodes = 0;
       searcher.nodeLimit = 1_500_000;
       const start = pos.clone();
-      const result = findMate(start, rng() < 0.35 ? 3 : 2) ?? findTactic(start, before, searcher);
+      const hardMode = minRating > 0;
+      const result = findMate(start, hardMode || rng() < 0.35 ? 3 : 2) ?? findTactic(start, before, searcher);
       if (!result) continue;
+      // Zor mod: tek hamlelik taktikleri hiç alma.
+      if (hardMode && result.mateIn === 0 && result.line.length < 3) continue;
       seen.add(key);
       // Aynı oyundan çok sayıda / birbirinin tekrarı bulmaca alma.
       if (fromThisGame >= 4 || result.line[0] === lastSolution) continue;
@@ -119,6 +124,10 @@ function runWorker(id: number, quota: number, seed: number): void {
         stats.rejected++;
         continue;
       }
+      if (hardMode) {
+        puzzle.rating = difficultyRating(measure(puzzle));
+        if (puzzle.rating < minRating) continue;
+      }
       appendFileSync(outFile, JSON.stringify(puzzle) + '\n');
       found++;
       if (result.mateIn) stats.mate++; else stats.tactic++;
@@ -136,17 +145,19 @@ function runMain(): void {
   const workers = Number(arg('workers', '4'));
   const seed = Number(arg('seed', '20261003'));
   const quota = Math.ceil(target / workers);
+  const minRating = arg('min-rating', '0');
+  const prefix = arg('prefix', 'worker-');
   const self = fileURLToPath(import.meta.url);
   console.log(`Generating ${target} puzzles with ${workers} workers -> ${RAW_DIR}`);
   for (let i = 0; i < workers; i++) {
     const child = spawn(process.execPath, ['--import', 'tsx', self, '--worker', String(i), '--quota', String(quota),
-      '--seed', String(seed + i * 1_000_003)], { stdio: 'inherit' });
+      '--seed', String(seed + i * 1_000_003), '--min-rating', minRating, '--prefix', prefix], { stdio: 'inherit' });
     child.on('exit', (code) => { if (code) console.error(`worker ${i} exited with ${code}`); });
   }
 }
 
 if (process.argv.includes('--worker')) {
-  runWorker(Number(arg('worker', '0')), Number(arg('quota', '100')), Number(arg('seed', '1')));
+  runWorker(Number(arg('worker', '0')), Number(arg('quota', '100')), Number(arg('seed', '1')), Number(arg('min-rating', '0')), arg('prefix', 'worker-'));
 } else {
   runMain();
 }

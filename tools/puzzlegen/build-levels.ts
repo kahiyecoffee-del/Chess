@@ -27,8 +27,14 @@ function load(): Puzzle[] {
   console.log(`reading ${dir === rated ? 'measured (re-rated)' : 'raw'} puzzles`);
   const byPosition = new Map<string, Puzzle>();
   let invalid = 0;
-  for (const file of readdirSync(dir).filter((f) => f.endsWith('.jsonl')).sort()) {
-    for (const line of readFileSync(join(dir, file), 'utf8').split('\n')) {
+  // Ölçülmüş bulmacalar + zor modda üretilenler (onlar üretimde zaten ölçülür).
+  const files = readdirSync(dir).filter((f) => f.endsWith('.jsonl')).map((f) => join(dir, f));
+  if (dir === rated) {
+    const raw = join(OUT, 'raw');
+    files.push(...readdirSync(raw).filter((f) => f.startsWith('hard-') && f.endsWith('.jsonl')).map((f) => join(raw, f)));
+  }
+  for (const file of files.sort()) {
+    for (const line of readFileSync(file, 'utf8').split('\n')) {
       if (!line.trim()) continue;
       let p: Puzzle;
       try { p = JSON.parse(line) as Puzzle; } catch { invalid++; continue; }

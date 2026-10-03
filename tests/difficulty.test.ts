@@ -21,17 +21,27 @@ describe('measured difficulty', () => {
 });
 
 describe('difficulty curve', () => {
-  it('never gets easier from one world to the next', () => {
-    const themes = ['mateIn1', 'fork', 'pin', 'hangingPiece'];
-    const pool: Puzzle[] = Array.from({ length: 5000 }, (_, i) => ({
-      id: `p${i}`, fen: '', moves: [], rating: Math.round(400 + ((i * 7919) % 2200)), themes: [themes[i % 4]],
-    }));
-    const levels = orderByDifficulty(pool, 2000);
-    expect(levels).toHaveLength(2000);
+  const themes = ['mateIn1', 'fork', 'pin', 'hangingPiece'];
+  // Gerçek içerik gibi çarpık bir dağılım: çok sayıda kolay, az sayıda zor bulmaca.
+  const pool: Puzzle[] = Array.from({ length: 20000 }, (_, i) => ({
+    id: `p${i}`, fen: '', moves: [], rating: Math.round(400 + 1800 * Math.pow((i * 7919 % 20000) / 20000, 3)),
+    themes: [themes[i % 4]],
+  }));
+
+  it('rises in proportion to the level number', () => {
+    const levels = orderByDifficulty(pool, 20000);
     const avg = worldAverages(levels, 100);
+    expect(avg.length).toBeGreaterThan(20);
     for (let i = 1; i < avg.length; i++) expect(avg[i]).toBeGreaterThan(avg[i - 1]);
-    // Orantılı artış: ilk dünya en kolay uca, son dünya en zor uca yakın.
-    expect(avg[0]).toBeLessThan(560);
-    expect(avg[avg.length - 1]).toBeGreaterThan(2400);
+    // Doğrusal rampa: her dünya bir öncekinden yaklaşık eşit miktarda zor (rampa bölümünde).
+    const steps = avg.slice(1, 20).map((a, i) => a - avg[i]);
+    for (const s of steps) expect(s).toBeGreaterThan(15);
+    for (const s of steps) expect(s).toBeLessThan(40);
+  });
+
+  it('keeps the excess easy puzzles out of the adventure path', () => {
+    const levels = orderByDifficulty(pool, 20000);
+    expect(levels.length).toBeLessThan(pool.length);
+    expect(new Set(levels.map((p) => p.id)).size).toBe(levels.length);
   });
 });

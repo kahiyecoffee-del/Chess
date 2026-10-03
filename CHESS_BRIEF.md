@@ -25,7 +25,8 @@ Sen bu projede baş geliştiricimsin. Benimle birlikte Google Play'e (sonra App 
   5. `build-levels.ts` tekrar doğrular, tekilleştirir, **kademeli zorluk eğrisi** kurar (ilk 50 seviye çok kolay: mat-in-1 ve korunmasız taş) ve 1000'lik paketlere böler: `content/puzzles/levels/` (gömülü ~20.000) ve `content/puzzles/remote/` (sonradan indirilecek fazlalar).
 - Format (Lichess ile uyumlu mantık): FEN rakibin hamlesinden önceki pozisyondur; `moves[0]` rakibin hamlesidir, oyuncu `moves[1]`den çözer.
 - Uygulama her bulmacayı yüklerken kural motoruyla **yeniden doğrular**; hatalı olanı atlar ve kaydeder.
-- Zorluk puanları sezgiseldir; Aşama 4'te oyuncu verisiyle (çözülme oranı) yeniden ayarlanacak.
+- **Zorluk ölçülür** (`tools/puzzlegen/difficulty.ts`): motorun ilk hamleyi bulduğu derinlik, çözüm uzunluğu, sessiz hamle, fedakârlık görünümü, cazip alternatifler. Aşama 4'te oyuncu verisiyle (çözülme oranı) yeniden ayarlanacak.
+- **Macera yolu doğrusal rampa** (`tools/puzzlegen/curve.ts`): seviye i'nin hedefi 420 + 0,27·i (dünya başına ~27 puan); hiçbir dünya bir öncekinden kolay değildir (testle doğrulanır). Yol, zor bulmaca içeriği yettiği kadar uzar; zor-mod üretim (`--min-rating 900`) eklendikçe uzar. Kolay fazlası `remote/` paketlerinde günlük/sonsuz modlar için bekler.
 
 ## 3. Oyun modları
 
@@ -141,4 +142,5 @@ Firebase Analytics + Remote Config + Crashlytics. Olaylar: seviye başlangıç/b
 | 2026-10-03 | Arayüz "tatlı ve eğlenceli" (oyuncak kutusu teması); Candy Crush tarzı kıvrımlı yol haritası öne alındı | Kullanıcı isteği. |
 | 2026-10-03 | Seviye başına 3 hata hakkı; bitince reklamla +3 hak veya vazgeç (−1 can); 5 can, 30 dk'da 1 dolum | Kullanıcı isteği. Sayılar `config/economy.json`'da. |
 | 2026-10-03 | Arayüz modern koyu cam stiline geçti; ayarlar (müzik, dil), 35 dil, üretilen arka plan müziği eklendi | Kullanıcı isteği. |
+| 2026-10-03 | Zorluk motorla ölçülüyor; macera yolu seviyeyle orantılı doğrusal rampa (şu an ~4.460 seviye, zor üretimle uzuyor) | Kullanıcı isteği: seviyeler ilerledikçe o oranda zorlaşsın. |
 | 2026-10-03 | Reklamlar şimdilik `MockAdService` (ekranda "Test ad"); AdMob test ID'leri Aşama 3'te | Brifteki IAdService planı. |

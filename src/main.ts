@@ -15,8 +15,8 @@ import { MapScreen } from './presentation/ui/map';
 import { MockAdService } from './services/ads';
 import { MusicPlayer } from './services/music';
 
-// Uygulamaya gömülü ilk paket(ler). Kalan paketler Aşama 4'te uzaktan indirilecek.
-const packs = import.meta.glob<PuzzlePack>('../content/puzzles/levels/pack-00[0-1].json', { eager: true, import: 'default' });
+// Macera yolunun tüm paketleri uygulamaya gömülü. Fazla bulmacalar (remote/) diğer modlar için.
+const packs = import.meta.glob<PuzzlePack>('../content/puzzles/levels/pack-*.json', { eager: true, import: 'default' });
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const all = (sel: string) => document.querySelectorAll<HTMLElement>(sel);
