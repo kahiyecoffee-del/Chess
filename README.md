@@ -24,5 +24,17 @@ npm test                 # unit tests incl. perft
 npm run dev              # local dev server
 npm run build            # typecheck + single-file build in dist/index.html
 npm run gen:puzzles -- --target 22000 --workers 4   # generate raw puzzles (long)
-npm run gen:levels -- --embedded 20000              # build curve + packs
+npx tsx tools/puzzlegen/generate.ts --target 12000 --min-rating 900 --prefix hard- --seed 777   # hard-only puzzles
+npx tsx tools/puzzlegen/rerate.ts --workers 4       # measured difficulty for all raw puzzles
+npm run gen:levels -- --embedded 20000              # proportional ramp + packs
+node tools/build-artifact.mjs                       # dist/preview.html for the web preview
+```
+
+## End-to-end checks (headless Chromium)
+
+```
+CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome node tools/e2e/play.mjs dist/index.html shots
+node tools/e2e/shot-ui.mjs dist/index.html shots        # settings, languages (incl. RTL), music
+node tools/e2e/special.mjs dist/index.html shots 95 1733 # promotion picker, 3-move puzzle
+node tools/e2e/shot-worlds.mjs dist/index.html shots 40 140 230   # map worlds
 ```

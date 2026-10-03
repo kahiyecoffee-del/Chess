@@ -49,6 +49,14 @@ export class Tweener {
     return () => this.frameHooks.delete(fn);
   }
 
+  /** Süren tüm animasyonları uygulamadan bitirir (bekleyen promise'ler çözülür). */
+  cancelAll(): void {
+    const active = this.active;
+    this.active = [];
+    this.timeScale = 1;
+    for (const a of active) a.resolve();
+  }
+
   get busy(): boolean {
     return this.active.length > 0;
   }

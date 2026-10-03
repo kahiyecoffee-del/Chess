@@ -52,6 +52,20 @@ describe('PuzzleSession', () => {
     expect(s.tryMove('a1a8')).toEqual({ kind: 'solved' });
   });
 
+  it('accepts an immediate checkmate in the middle of a longer line', () => {
+    // Çözüm satırı iki hamlelik (Rb7 … Ra8#) ama oyuncu ilk hamlede mat edebilirse kazanmalı.
+    const p: Puzzle = {
+      id: 't4', fen: '7k/8/6K1/8/8/8/R7/1R6 b - - 0 1', moves: ['h8g8', 'b1b7', 'g8h8', 'a2a8'],
+      rating: 900, themes: ['advantage'],
+    };
+    // Şg8'den sonra Ra8# hemen mat (g6'daki şah f7/g7/h7'yi tutuyor).
+    const s = new PuzzleSession(p);
+    s.playOpening();
+    expect(s.tryMove('a2a8')).toEqual({ kind: 'solved' });
+    expect(s.solved).toBe(true);
+    expect(s.mistakes).toBe(0);
+  });
+
   it('auto-plays opponent replies in multi-move puzzles', () => {
     // Mat-in-2 (merdiven matı): Rb7+ / Ra8#
     const p: Puzzle = {
@@ -81,5 +95,22 @@ describe('mate search', () => {
     expect(moves).toContain('b1b7');
     expect(moves).toContain('a2a7');
     expect(moves).not.toContain('g1f1');
+  });
+});
+
+import { Tweener } from '../src/presentation/tween';
+
+describe('Tweener', () => {
+  it('cancelAll resolves pending tweens without applying them', async () => {
+    const tw = new Tweener();
+    let last = -1;
+    const p = tw.tween(1, (k) => (last = k));
+    tw.timeScale = 0.4;
+    tw.step(0.1);
+    tw.cancelAll();
+    await p;
+    expect(last).toBeLessThan(1);
+    expect(tw.timeScale).toBe(1);
+    expect(tw.busy).toBe(false);
   });
 });

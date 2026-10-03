@@ -45,7 +45,8 @@ export class MusicPlayer {
   setEnabled(on: boolean): void {
     this.enabled = on;
     if (on) this.resume();
-    else this.fadeTo(0, 0.6, () => void this.ctx?.suspend());
+    // Kısma bitmeden yeniden açılırsa susturma, aksi halde açık görünüp sessiz kalır.
+    else this.fadeTo(0, 0.6, () => { if (!this.enabled) void this.ctx?.suspend(); });
   }
 
   get isEnabled(): boolean {

@@ -38,6 +38,10 @@ export class Board3D {
   readonly group = new THREE.Group(); // tahta + taşlar (döndürme ve yön çevirme bunun üzerinde)
 
   private pieces = new Map<number, THREE.Mesh>();
+  /** Süren geçici efektler (devrilen taşlar, parçacıklar): seviye değişince hemen temizlenir. */
+  private transients = new Set<() => void>();
+  /** Pozisyon her kurulduğunda artar; eski animasyonların devamı yeni tahtaya dokunmaz. */
+  private epoch = 0;
   private pieceMaterials: [THREE.MeshPhysicalMaterial, THREE.MeshPhysicalMaterial];
   private overlay = new THREE.Group();
   private labels: THREE.Mesh[] = [];
@@ -356,6 +360,8 @@ export class Board3D {
   }
 
   setPosition(pos: Position): void {
+    this.epoch++;
+    for (const finish of [...this.transients]) finish();
     for (const mesh of this.pieces.values()) this.removePiece(mesh);
     this.pieces.clear();
     for (let sq = 0; sq < 64; sq++) if (pos.board[sq] !== EMPTY) this.createPiece(pos.board[sq], sq);
@@ -474,6 +480,13 @@ export class Board3D {
     let tipped = 0;
     let life = 0;
     return new Promise((resolve) => {
+      const finish = () => {
+        stop();
+        this.transients.delete(finish);
+        this.removePiece(mesh);
+        resolve();
+      };
+      this.transients.add(finish);
       const stop = this.tweener.onFrame((dt) => {
         life += dt;
         tipped = Math.min(1, tipped + dt * 4.5);
@@ -486,11 +499,7 @@ export class Board3D {
         // Taban merkezinde döndüğü için yatarken taban yarıçapı kadar yüksel.
         mesh.position.set(pos.x, pos.y + LIE_HEIGHT * Math.sin((Math.PI / 2) * ease.outQuad(tipped)) + fall, pos.z);
         if (life > 0.9) mat.opacity = Math.max(0, 1 - (life - 0.9) * 2.5);
-        if (life > 1.3) {
-          stop();
-          this.removePiece(mesh);
-          resolve();
-        }
+        if (life > 1.3) finish();
       });
     });
   }
@@ -502,6 +511,7 @@ export class Board3D {
   async animateMove(desc: MoveDescription, moverColor: Color, opts: { fast?: boolean } = {}): Promise<void> {
     const mesh = this.pieces.get(desc.from);
     if (!mesh) return;
+    const epoch = this.epoch;
     this.clearSelection();
     this.setCheck(-1);
     const captured = desc.captureSq >= 0 ? this.pieces.get(desc.captureSq) : undefined;
@@ -523,15 +533,20 @@ export class Board3D {
     }
     if (captured) {
       const push = this.squarePosition(desc.captureSq).sub(this.squarePosition(desc.from));
-      void this.tweener.wait(duration * 0.78).then(() => this.topple(captured, push));
+      void this.tweener.wait(duration * 0.78).then(() => {
+        if (epoch === this.epoch) void this.topple(captured, push);
+        else this.removePiece(captured); // seviye değişti: devrilmeyi atla
+      });
     }
     await Promise.all(moving);
+    if (epoch !== this.epoch) return;
     if (desc.promo) {
       this.removePiece(mesh);
       this.pieces.delete(desc.to);
       const promoted = this.createPiece(makePiece(desc.promo, moverColor), desc.to);
       promoted.scale.setScalar(0.01);
       await this.tweener.tween(0.3, (k) => promoted.scale.setScalar(Math.max(0.01, k)), ease.outBack);
+      if (epoch !== this.epoch) return;
     }
     this.showLastMove(desc.from, desc.to);
   }
@@ -540,6 +555,7 @@ export class Board3D {
   async rejectMove(from: number, to: number, alreadyDragged: boolean): Promise<void> {
     const mesh = this.pieces.get(from);
     if (!mesh) return;
+    const epoch = this.epoch;
     this.clearSelection();
     const home = this.squarePosition(from);
     const target = this.squarePosition(to);
@@ -549,6 +565,7 @@ export class Board3D {
         mesh.position.lerpVectors(start, target, k);
         mesh.position.y = Math.sin(Math.PI * k) * 0.3;
       }, ease.inOutCubic);
+      if (epoch !== this.epoch) return;
     }
     this.shakeCamera(0.6);
     navigator.vibrate?.(60);
@@ -586,12 +603,12 @@ export class Board3D {
       king.position.y = LIE_HEIGHT * Math.sin((Math.PI / 2) * k);
     }, ease.inQuad);
     await zoomIn;
+    this.tweener.timeScale = 1; // bekleme normal hızda
     await this.tweener.wait(0.5);
-    this.tweener.timeScale = 1;
   }
 
   resetCamera(): void {
-    this.tweener.timeScale = 1;
+    this.tweener.cancelAll(); // yarım kalan mat sineması yeni seviyenin kamerasını oynatmasın
     this.zoom = 1;
     this.cameraTarget.set(0, 0, 0.3);
     this.resize();
@@ -617,6 +634,14 @@ export class Board3D {
     const points = new THREE.Points(geo, mat);
     this.group.add(points);
     let life = 0;
+    const finish = () => {
+      stop();
+      this.transients.delete(finish);
+      this.group.remove(points);
+      geo.dispose();
+      mat.dispose();
+    };
+    this.transients.add(finish);
     const stop = this.tweener.onFrame((dt) => {
       life += dt;
       for (let i = 0; i < count; i++) {
@@ -628,12 +653,7 @@ export class Board3D {
       }
       geo.attributes.position.needsUpdate = true;
       mat.opacity = Math.max(0, 1 - life / 2.2);
-      if (life > 2.2) {
-        stop();
-        this.group.remove(points);
-        geo.dispose();
-        mat.dispose();
-      }
+      if (life > 2.2) finish();
     });
   }
 }

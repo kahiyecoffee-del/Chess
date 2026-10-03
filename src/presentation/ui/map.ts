@@ -163,6 +163,7 @@ export class MapScreen {
     }
     const nodes = document.createElement('div');
     nodes.className = 'world-nodes';
+    section.querySelectorAll('canvas').forEach((old) => this.tileObserver.unobserve(old));
     section.replaceChildren(...tiles, this.ambient(info, width), this.banner(info), nodes);
     for (const c of tiles) this.tileObserver.observe(c);
     this.refreshNodes(w);

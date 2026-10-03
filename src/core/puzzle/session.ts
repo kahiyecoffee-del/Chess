@@ -8,7 +8,8 @@ export type MoveResult =
 
 /**
  * Bir bulmacanın çözüm durumu. Görsel katmandan bağımsızdır.
- * Kural: son hamlede mat yapan HER hamle doğru sayılır; diğer hamlelerde veritabanı hamlesi beklenir.
+ * Kural: mat yapan HER hamle bulmacayı çözer (çözüm satırından daha iyi olsa bile);
+ * mat değilse veritabanındaki hamle beklenir.
  */
 export class PuzzleSession {
   readonly position: Position;
@@ -60,18 +61,17 @@ export class PuzzleSession {
       this.mistakes++;
       return { kind: 'wrong' };
     }
-    let ok = uci === this.puzzle.moves[this.index];
-    if (!ok && this.isFinalMove) {
-      this.position.makeMove(move);
-      ok = this.position.isCheckmate();
-      this.position.unmakeMove(move);
-    }
-    if (!ok) {
+    const expected = uci === this.puzzle.moves[this.index];
+    this.position.makeMove(move);
+    const mates = this.position.isCheckmate();
+    this.position.unmakeMove(move);
+    if (!expected && !mates) {
       this.mistakes++;
       return { kind: 'wrong' };
     }
     this.position.makeMove(move);
     this.index++;
+    if (mates) this.index = this.puzzle.moves.length; // mat: bulmaca bitti
     if (this.solved) return { kind: 'solved' };
     const reply = this.puzzle.moves[this.index];
     this.position.playUci(reply);

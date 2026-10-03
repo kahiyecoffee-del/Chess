@@ -70,6 +70,8 @@ function boot(): void {
   let flow: PuzzleFlow | null = null;
   let level = 1;
   let currentPuzzle: Puzzle | null = null;
+  /** Tahtayı görev kartının altına sığdırır; kart yüksekliği metne/dile göre değişir. */
+  let relayout = () => {};
   const playable = () => Math.min(save.unlocked, library.count);
 
   /** Dile bağlı tüm metinleri yazar; dil değişince yeniden çağrılır. */
@@ -220,13 +222,14 @@ function boot(): void {
     board = b;
     flow = f;
     const layout = () => {
+      if ($('screen-game').hidden) return; // gizli ekranın ölçüleri sıfırdır
       const h = window.innerHeight;
       const top = $('screen-game').querySelector('.goal-card')!.getBoundingClientRect().bottom;
       const bottom = h - status.getBoundingClientRect().top;
       b.setLayout({ topInset: (top + 6) / h, bottomInset: (bottom + 4) / h });
     };
     window.addEventListener('resize', layout);
-    layout();
+    relayout = layout;
     // Uçtan uca testlerin oyunu sürebilmesi için küçük bir kanca.
     (window as unknown as { __cq: unknown }).__cq = { flow: f, board: b, library, play: startLevel, save: () => save, music };
     return f;
@@ -252,6 +255,7 @@ function boot(): void {
     const f = ensureBoard();
     $('level-num').textContent = String(n);
     applyTexts();
+    relayout();
     $('side-swatch').classList.toggle('black', puzzle.fen.split(' ')[1] !== 'b');
     void f.start(puzzle, ECONOMY.level.mistakesAllowed);
   }
@@ -286,6 +290,7 @@ function boot(): void {
     persist();
     setLanguage(value || deviceLanguage());
     applyTexts();
+    relayout();
   });
 
   // ---- Düğmeler ----

@@ -1,9 +1,9 @@
 # Puzzle content report
 
-Generated: 2026-10-03T20:32:11.205Z
+Generated: 2026-10-03T21:24:03.302Z
 
-- Embedded levels: 4461
-- Remote (downloadable later): 17589
+- Embedded levels: 4559
+- Remote (downloadable later): 17754
 
 ## Rating by world (100 levels)
 
@@ -20,30 +20,30 @@ Generated: 2026-10-03T20:32:11.205Z
 | 9 | 801–900 | 636 | 649 | 663 |
 | 10 | 901–1000 | 663 | 676 | 690 |
 | 21 | 2001–2100 | 960 | 973 | 987 |
-| 41 | 4001–4100 | 1531 | 1596 | 1690 |
-| 45 | 4401–4461 | 2050 | 2094 | 2211 |
+| 41 | 4001–4100 | 1518 | 1556 | 1610 |
+| 46 | 4501–4559 | 2064 | 2102 | 2221 |
 
 ## Themes (embedded)
 
 | Theme | Count |
 |---|---|
-| middlegame | 3762 |
-| mate | 2206 |
-| mateIn2 | 1273 |
-| short | 1272 |
-| oneMove | 651 |
-| mateIn3 | 619 |
-| skewer | 615 |
-| fork | 551 |
-| endgame | 518 |
-| hangingPiece | 472 |
-| backRankMate | 380 |
-| long | 332 |
+| middlegame | 3838 |
+| mate | 2310 |
+| mateIn2 | 1293 |
+| short | 1275 |
+| mateIn3 | 703 |
+| oneMove | 644 |
+| skewer | 630 |
+| fork | 553 |
+| endgame | 537 |
+| hangingPiece | 466 |
+| backRankMate | 397 |
+| long | 330 |
 | mateIn1 | 314 |
-| promotion | 256 |
+| promotion | 271 |
 | pin | 229 |
-| opening | 181 |
-| discoveredCheck | 126 |
-| sacrifice | 66 |
-| discoveredAttack | 49 |
-| doubleCheck | 33 |
+| opening | 184 |
+| discoveredCheck | 129 |
+| sacrifice | 70 |
+| discoveredAttack | 52 |
+| doubleCheck | 36 |
