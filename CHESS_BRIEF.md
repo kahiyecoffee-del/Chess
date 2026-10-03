@@ -44,8 +44,9 @@ Sen bu projede baş geliştiricimsin. Benimle birlikte Google Play'e (sonra App 
 |---|---|---|
 | **Altın (soft)** | Seviye bitirme, yıldız, günlük ödül, ödüllü reklam | İpucu, geri alma, kozmetik setler |
 | **Elmas (hard)** | Satın alma, nadir ödüller, sezon kartı | Premium kozmetik, can yenileme, özel dünyalar |
-| **Can (opsiyonel, Remote Config ile aç/kapat)** | Zamanla dolar (5 can, 20 dk'da bir) | Yanlış çözümde 1 can gider |
+| **Can (varsayılan açık; Remote Config ile aç/kapat)** | Zamanla dolar (en fazla 5 can, **30 dk'da bir**) ve ödüllü reklamla +1 | Seviyedeki **hata hakları bitip oyuncu vazgeçince** (ya da hata yaptıktan sonra seviyeden çıkınca) 1 can gider |
 
+- **Seviye hata hakkı:** Her seviyede 3 hata hakkı (kalplerle gösterilir). Haklar bitince: *Reklam izle → +3 hak, kaldığın yerden devam (can gitmez)* ya da *Vazgeç → 1 can gider, haritaya dön*. Can 0 iken seviye açılmaz; *Reklam izle → +1 can* teklif edilir.
 - **İpucu sistemi:** 1. ipucu doğru taşı parlatır, 2. ipucu hedef kareyi gösterir, 3. ipucu hamleyi oynar.
 - **Kozmetik mağaza (ana harcama alanı):** 3D tahta setleri (mermer, ahşap, kristal, neon, lav) ve taş setleri (klasik, cam, altın, robot, fantastik). Ayrıca mat efektleri (şimşek, havai fişek).
 - **İlerleme ödülleri:** Dünya sonu sandıkları, kilometre taşları, günlük görevler, 7 günlük giriş ödülü.
@@ -136,3 +137,6 @@ Firebase Analytics + Remote Config + Crashlytics. Olaylar: seviye başlangıç/b
 | 2026-10-03 | Takılan oyuncuya bulmaca değiştirilmez; ipucu + reklam teklif edilir | Kullanıcı onayı. |
 | 2026-10-03 | Son hamlede her mat doğru sayılır; ara hamlelerde tek çözüm | Varsayılan (kullanıcı itiraz etmedi). |
 | 2026-10-03 | Paket adı geçici: `com.checkmatequest.app` | Şirket kurulumu sürüyor; Aşama 5'ten önce kesinleşecek. |
+| 2026-10-03 | Arayüz "tatlı ve eğlenceli" (oyuncak kutusu teması); Candy Crush tarzı kıvrımlı yol haritası öne alındı | Kullanıcı isteği. |
+| 2026-10-03 | Seviye başına 3 hata hakkı; bitince reklamla +3 hak veya vazgeç (−1 can); 5 can, 30 dk'da 1 dolum | Kullanıcı isteği. Sayılar `config/economy.json`'da. |
+| 2026-10-03 | Reklamlar şimdilik `MockAdService` (ekranda "Test ad"); AdMob test ID'leri Aşama 3'te | Brifteki IAdService planı. |

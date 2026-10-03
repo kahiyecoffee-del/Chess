@@ -1,49 +1,51 @@
 # Puzzle content report
 
-Generated: 2026-10-03T18:21:06.055Z
+Generated: 2026-10-03T18:48:24.781Z
 
-- Embedded levels: 2457
+- Embedded levels: 7252
 - Remote (downloadable later): 0
 
 ## Rating by world (100 levels)
 
 | World | Levels | Min | Avg | Max |
 |---|---|---|---|---|
-| 1 | 1–100 | 400 | 571 | 662 |
-| 2 | 101–200 | 602 | 651 | 694 |
-| 3 | 201–300 | 644 | 683 | 726 |
-| 4 | 301–400 | 670 | 715 | 754 |
-| 5 | 401–500 | 692 | 743 | 776 |
-| 6 | 501–600 | 727 | 765 | 794 |
-| 7 | 601–700 | 753 | 789 | 816 |
-| 8 | 701–800 | 780 | 809 | 842 |
-| 9 | 801–900 | 798 | 839 | 939 |
-| 10 | 901–1000 | 820 | 910 | 993 |
-| 21 | 2001–2100 | 1539 | 1561 | 1595 |
-| 25 | 2401–2457 | 527 | 550 | 570 |
+| 1 | 1–100 | 400 | 548 | 639 |
+| 2 | 101–200 | 588 | 624 | 654 |
+| 3 | 201–300 | 609 | 638 | 662 |
+| 4 | 301–400 | 622 | 649 | 673 |
+| 5 | 401–500 | 636 | 659 | 685 |
+| 6 | 501–600 | 646 | 669 | 694 |
+| 7 | 601–700 | 653 | 679 | 707 |
+| 8 | 701–800 | 663 | 688 | 715 |
+| 9 | 801–900 | 671 | 698 | 723 |
+| 10 | 901–1000 | 680 | 708 | 733 |
+| 21 | 2001–2100 | 783 | 794 | 809 |
+| 41 | 4001–4100 | 1155 | 1160 | 1165 |
+| 61 | 6001–6100 | 1555 | 1565 | 1573 |
+| 73 | 7201–7252 | 462 | 488 | 508 |
 
 ## Themes (embedded)
 
 | Theme | Count |
 |---|---|
-| middlegame | 2096 |
-| oneMove | 1037 |
-| hangingPiece | 775 |
-| mate | 751 |
-| short | 626 |
-| mateIn1 | 384 |
-| skewer | 375 |
-| fork | 281 |
-| mateIn2 | 280 |
-| opening | 220 |
-| endgame | 141 |
-| backRankMate | 131 |
-| pin | 127 |
-| mateIn3 | 87 |
-| promotion | 75 |
-| long | 43 |
-| discoveredCheck | 40 |
-| discoveredAttack | 27 |
-| sacrifice | 14 |
-| doubleCheck | 7 |
-| smotheredMate | 2 |
+| middlegame | 6225 |
+| oneMove | 3097 |
+| hangingPiece | 2326 |
+| mate | 2216 |
+| short | 1803 |
+| mateIn1 | 1166 |
+| skewer | 1063 |
+| fork | 867 |
+| mateIn2 | 805 |
+| opening | 621 |
+| backRankMate | 411 |
+| endgame | 406 |
+| pin | 355 |
+| mateIn3 | 245 |
+| promotion | 184 |
+| long | 136 |
+| discoveredCheck | 105 |
+| discoveredAttack | 61 |
+| sacrifice | 55 |
+| doubleCheck | 22 |
+| smotheredMate | 4 |

@@ -8,6 +8,10 @@ import { BoardInput } from '../presentation/input';
 export interface FlowUi {
   setStatus(text: 'yourMove' | 'opponentMoving' | 'correct' | 'wrong'): void;
   setProgress(done: number, total: number): void;
+  /** Kalan hata hakkı değişti. */
+  setTriesLeft(left: number, total: number): void;
+  /** Hata hakları bitti; oyuncu reklamla devam edebilir ya da vazgeçer. */
+  outOfTries(): void;
   showSolved(mistakes: number): void;
   askPromotion(color: Color): Promise<number | null>;
 }
@@ -18,6 +22,7 @@ export class PuzzleFlow {
   private targets: Move[] = [];
   private busy = true;
   private token = 0; // her yeni bulmacada artar; eski async akışları iptal eder
+  private triesAllowed = 3;
   readonly input: BoardInput;
 
   constructor(private board: Board3D, canvas: HTMLElement, private ui: FlowUi) {
@@ -35,12 +40,48 @@ export class PuzzleFlow {
     return this.session?.expectedMove ?? null;
   }
 
+  /** Uçtan uca testler için: beklenmeyen, mat etmeyen yasal bir oyuncu hamlesi. */
+  wrongMoveForTests(): string | null {
+    const s = this.session;
+    if (!s) return null;
+    for (const m of s.position.legalMoves()) {
+      const uci = moveToUci(m);
+      if (uci === s.expectedMove) continue;
+      s.position.makeMove(m);
+      const mate = s.position.isCheckmate();
+      s.position.unmakeMove(m);
+      if (!mate) return uci;
+    }
+    return null;
+  }
+
   get accepting(): boolean {
     return !this.busy && !!this.session && this.session.started && !this.session.solved;
   }
 
-  async start(puzzle: Puzzle): Promise<void> {
+  /** Oyuncuyu bulmacadan çıkarır (harita, vazgeç). */
+  stop(): void {
+    this.token++;
+    this.busy = true;
+    this.deselect();
+  }
+
+  get mistakes(): number {
+    return this.session?.mistakes ?? 0;
+  }
+
+  /** Reklam ödülü: ek hata hakkı ver ve kaldığı yerden devam et. */
+  grantTries(extra: number): void {
+    if (!this.session) return;
+    this.triesAllowed += extra;
+    this.ui.setTriesLeft(this.triesAllowed - this.session.mistakes, this.triesAllowed);
+    this.busy = false;
+    this.ui.setStatus('yourMove');
+  }
+
+  async start(puzzle: Puzzle, triesAllowed: number): Promise<void> {
     const token = ++this.token;
+    this.triesAllowed = triesAllowed;
     const session = new PuzzleSession(puzzle);
     this.session = session;
     this.busy = true;
@@ -50,6 +91,7 @@ export class PuzzleFlow {
     this.board.setPosition(session.position);
     this.board.showLastMove(-1, -1);
     this.ui.setProgress(0, puzzle.moves.length / 2);
+    this.ui.setTriesLeft(triesAllowed, triesAllowed);
     this.ui.setStatus('opponentMoving');
     await this.board.tweener.wait(0.55);
     if (token !== this.token) return;
@@ -145,8 +187,12 @@ export class PuzzleFlow {
 
     if (result.kind === 'wrong') {
       this.ui.setStatus('wrong');
+      const left = this.triesAllowed - session.mistakes;
+      this.ui.setTriesLeft(left, this.triesAllowed);
       await this.board.rejectMove(from, to, dragged);
-      if (token === this.token) this.busy = false;
+      if (token !== this.token) return;
+      if (left <= 0) this.ui.outOfTries(); // giriş, grantTries ya da yeni bulmacaya kadar kapalı kalır
+      else this.busy = false;
       return;
     }
 

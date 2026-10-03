@@ -1,0 +1,14 @@
+{
+  "lives": {
+    "max": 5,
+    "regenMinutes": 30
+  },
+  "level": {
+    "mistakesAllowed": 3,
+    "adExtraMistakes": 3
+  },
+  "ads": {
+    "rewardedLifeAmount": 1,
+    "mockAdSeconds": 5
+  }
+}

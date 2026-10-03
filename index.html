@@ -6,60 +6,103 @@
 <title>Checkmate Quest</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Figtree:wght@400;600;700&display=swap">
-<link rel="stylesheet" href="/src/styles.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
 </head>
 <body>
 <div id="app">
-  <canvas id="board" aria-label="Chess board"></canvas>
 
-  <header class="hud-top">
-    <div class="level-chip">
-      <span class="eyebrow" data-t="levelLabel">Level</span>
-      <strong id="level-num" class="level-num">1</strong>
-    </div>
-    <div class="goal">
-      <div id="goal-text" class="goal-text">Checkmate in 1 move</div>
-      <div id="side-text" class="side-text"><span id="side-swatch" class="swatch"></span><span id="side-label">You play White</span></div>
-    </div>
-    <button id="btn-levels" class="icon-btn" type="button" aria-label="Levels">
-      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/></svg>
-    </button>
-  </header>
-
-  <div id="status" class="status" role="status" aria-live="polite">Your move</div>
-
-  <footer class="hud-bottom">
-    <button id="btn-retry" class="ghost-btn" type="button">Retry</button>
-    <div id="move-progress" class="move-progress" aria-label="Moves solved"></div>
-  </footer>
-
-  <section id="result" class="sheet" hidden>
-    <div class="sheet-card result-card">
-      <div class="crest" aria-hidden="true">♚</div>
-      <h2 id="result-title" class="sheet-title">Solved!</h2>
-      <p id="result-detail" class="sheet-detail">Solved with no mistakes</p>
-      <button id="btn-next" class="primary-btn" type="button">Next level</button>
-      <button id="btn-result-retry" class="ghost-btn" type="button">Retry</button>
-    </div>
-  </section>
-
-  <section id="levels" class="sheet" hidden>
-    <div class="sheet-card levels-card">
-      <div class="sheet-head">
-        <h2 id="levels-title" class="sheet-title">Choose a level</h2>
-        <button id="btn-levels-close" class="icon-btn" type="button" aria-label="Close">
-          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M6.4 5 12 10.6 17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6l5.6-5.6L5 6.4z"/></svg>
-        </button>
+  <!-- Harita -->
+  <section id="screen-map" class="screen map-screen">
+    <div id="map-scroll" class="map-scroll"><div class="map-track"></div></div>
+    <header class="map-top">
+      <div class="lives-pill" data-lives>
+        <span class="lives-heart"><span data-heart></span><b data-lives-count>5</b></span>
+        <span class="lives-timer" data-lives-timer>Full</span>
       </div>
-      <div id="level-grid" class="level-grid"></div>
-      <p id="credits" class="credits"></p>
+      <div class="brand"><span class="brand-mark">♚</span><span>Checkmate<br>Quest</span></div>
+    </header>
+    <div class="map-bottom">
+      <button id="btn-map-play" class="candy-btn big" type="button"><span data-play-icon></span><span id="map-play-label">Play level 1</span></button>
     </div>
   </section>
 
-  <div id="promo" class="sheet promo" hidden>
-    <div class="sheet-card promo-card">
-      <p id="promo-title" class="eyebrow">Promote to</p>
+  <!-- Oyun -->
+  <section id="screen-game" class="screen game-screen" hidden>
+    <canvas id="board" aria-label="Chess board"></canvas>
+    <header class="hud-top">
+      <button id="btn-back" class="round-btn" type="button" aria-label="Map"></button>
+      <div class="level-pill"><span id="level-label">Level</span> <b id="level-num">1</b></div>
+      <div class="lives-pill small" data-lives>
+        <span class="lives-heart"><span data-heart></span><b data-lives-count>5</b></span>
+      </div>
+    </header>
+    <div class="goal-card">
+      <div id="goal-text" class="goal-text">Checkmate in 1 move</div>
+      <div class="goal-meta">
+        <span class="side"><span id="side-swatch" class="swatch"></span><span id="side-label">You play White</span></span>
+        <span id="tries" class="tries" role="img" aria-label="3 tries left"></span>
+      </div>
+    </div>
+    <div id="status" class="status" role="status" aria-live="polite">Your move</div>
+    <footer class="hud-bottom">
+      <div id="move-progress" class="move-progress" aria-label="Moves solved"></div>
+    </footer>
+  </section>
+
+  <!-- Pencereler -->
+  <div id="modal-result" class="modal" hidden>
+    <div class="card result-card">
+      <div class="confetti" aria-hidden="true"></div>
+      <div id="result-stars" class="result-stars"></div>
+      <h2 id="result-title" class="card-title">Great job!</h2>
+      <p id="result-detail" class="card-text">Solved with no mistakes</p>
+      <div class="card-actions">
+        <button id="btn-next" class="candy-btn" type="button">Next level</button>
+        <button id="btn-result-map" class="soft-btn" type="button">Map</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-tries" class="modal" hidden>
+    <div class="card">
+      <div class="card-emblem sad" aria-hidden="true"><span data-heart-broken></span></div>
+      <h2 id="tries-title" class="card-title">Out of tries!</h2>
+      <p id="tries-text" class="card-text"></p>
+      <div class="card-actions">
+        <button id="btn-ad-tries" class="candy-btn" type="button"><span data-play-icon></span><span id="ad-tries-label">Watch ad</span></button>
+        <button id="btn-give-up" class="soft-btn" type="button"><span id="give-up-label">Give up</span><small id="give-up-note">Costs 1 life</small></button>
+      </div>
+      <p id="tries-note" class="card-note" hidden></p>
+    </div>
+  </div>
+
+  <div id="modal-nolives" class="modal" hidden>
+    <div class="card">
+      <div class="card-emblem" aria-hidden="true"><span data-clock></span></div>
+      <h2 id="nolives-title" class="card-title">No lives left</h2>
+      <p id="nolives-text" class="card-text"></p>
+      <div class="card-actions">
+        <button id="btn-ad-life" class="candy-btn" type="button"><span data-play-icon></span><span id="ad-life-label">Watch ad: +1 life</span></button>
+        <button id="btn-nolives-ok" class="soft-btn" type="button">OK</button>
+      </div>
+      <p id="nolives-note" class="card-note" hidden></p>
+    </div>
+  </div>
+
+  <div id="modal-leave" class="modal" hidden>
+    <div class="card">
+      <h2 id="leave-title" class="card-title">Leave this level?</h2>
+      <p id="leave-text" class="card-text"></p>
+      <div class="card-actions">
+        <button id="btn-stay" class="candy-btn" type="button">Keep playing</button>
+        <button id="btn-leave" class="soft-btn" type="button">Leave</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-promo" class="modal" hidden>
+    <div class="card">
+      <p id="promo-title" class="card-eyebrow">Promote to</p>
       <div class="promo-row">
         <button type="button" data-promo="5" aria-label="Queen">♛</button>
         <button type="button" data-promo="4" aria-label="Rook">♜</button>

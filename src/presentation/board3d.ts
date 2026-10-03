@@ -54,13 +54,13 @@ export class Board3D {
 
   constructor(private canvas: HTMLCanvasElement, pieceSet: PieceSetDef = PIECE_SETS[DEFAULT_PIECE_SET],
     boardSet: BoardSetDef = BOARD_SETS[DEFAULT_BOARD_SET]) {
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
+    this.renderer.setClearColor(0x000000, 0); // arka planı CSS (dünya teması) çizer
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.renderer.toneMapping = THREE.NeutralToneMapping;
     this.renderer.toneMappingExposure = 1.0;
-    this.scene.background = new THREE.Color(boardSet.table);
 
     this.pieceMaterials = [material(pieceSet.white), material(pieceSet.black)];
     this.buildLights();
@@ -91,8 +91,11 @@ export class Board3D {
       const dt = Math.min(0.05, (now - this.lastTime) / 1000);
       this.lastTime = now;
       this.tweener.step(dt);
-      this.updateCamera(dt);
-      this.renderer.render(this.scene, this.camera);
+      // Oyun ekranı gizliyken (harita açık) çizim yapma: pil dostu.
+      if (this.canvas.offsetParent !== null) {
+        this.updateCamera(dt);
+        this.renderer.render(this.scene, this.camera);
+      }
       requestAnimationFrame(loop);
     };
     requestAnimationFrame(loop);
@@ -101,7 +104,7 @@ export class Board3D {
   // ---- Kurulum ----
 
   private buildLights(): void {
-    this.scene.add(new THREE.HemisphereLight('#fff1dc', '#2a2018', 1.1));
+    this.scene.add(new THREE.HemisphereLight('#fff6ea', '#6a4a8a', 1.25));
     const key = new THREE.DirectionalLight('#ffe9cc', 2.3);
     key.position.set(-4, 10, 5);
     key.castShadow = true;
@@ -137,15 +140,15 @@ export class Board3D {
     frame.position.y = -0.11;
     frame.receiveShadow = true;
     this.group.add(frame);
-    const plinth = new THREE.Mesh(new THREE.BoxGeometry(outer + 0.3, 0.3, outer + 0.3), frameMat);
+    const plinth = new THREE.Mesh(new THREE.BoxGeometry(outer + 0.3, 0.3, outer + 0.3), material(set.plinth));
     plinth.position.y = -0.33;
     this.group.add(plinth);
-    const table = new THREE.Mesh(new THREE.CircleGeometry(30, 48),
-      new THREE.MeshStandardMaterial({ color: set.table, roughness: 0.95 }));
-    table.rotation.x = -Math.PI / 2;
-    table.position.y = -0.48;
-    table.receiveShadow = true;
-    this.scene.add(table);
+    // Şeffaf zemin: yalnızca gölgeyi gösterir, arka plan CSS'ten gelir.
+    const shadowCatcher = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.ShadowMaterial({ opacity: 0.22 }));
+    shadowCatcher.rotation.x = -Math.PI / 2;
+    shadowCatcher.position.y = -0.48;
+    shadowCatcher.receiveShadow = true;
+    this.scene.add(shadowCatcher);
     this.buildLabels(set);
   }
 
@@ -155,7 +158,7 @@ export class Board3D {
       c.width = c.height = 64;
       const g = c.getContext('2d')!;
       g.fillStyle = set.light.color;
-      g.font = '600 40px Georgia, serif';
+      g.font = '700 40px Fredoka, Nunito, sans-serif';
       g.textAlign = 'center';
       g.textBaseline = 'middle';
       g.fillText(text, 32, 34);
