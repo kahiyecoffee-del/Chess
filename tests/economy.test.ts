@@ -59,7 +59,9 @@ describe('stars', () => {
 
 describe('save migration', () => {
   it('creates a fresh save', () => {
-    expect(migrate(null, null)).toEqual({ version: 1, lives: { lives: 5, regenStart: null }, unlocked: 1, stars: [] });
+    expect(migrate(null, null)).toEqual({
+      version: 2, lives: { lives: 5, regenStart: null }, unlocked: 1, stars: [], settings: { music: true, language: null },
+    });
   });
   it('migrates the v0 last-level key', () => {
     expect(migrate(null, '12').unlocked).toBe(12);
@@ -69,6 +71,16 @@ describe('save migration', () => {
     expect(s.lives.lives).toBe(5);
     expect(s.unlocked).toBe(7);
     expect(s.stars).toEqual([3, 3, 0]);
+  });
+  it('migrates v1 to v2 with default settings', () => {
+    const s = migrate({ version: 1, lives: { lives: 2, regenStart: 5 }, unlocked: 4, stars: [3] }, null);
+    expect(s.version).toBe(2);
+    expect(s.settings).toEqual({ music: true, language: null });
+    expect(s.unlocked).toBe(4);
+  });
+  it('keeps v2 settings', () => {
+    const s = migrate({ version: 2, lives: { lives: 5, regenStart: null }, unlocked: 1, stars: [], settings: { music: false, language: 'tr' } }, null);
+    expect(s.settings).toEqual({ music: false, language: 'tr' });
   });
   it('ignores garbage', () => {
     expect(migrate('nope', 'abc').unlocked).toBe(1);

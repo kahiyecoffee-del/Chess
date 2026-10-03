@@ -1,10 +1,10 @@
-// Uygulama girişi: harita, oyun ekranı, can sistemi, reklamlar ve bulmaca akışını bağlar.
+// Uygulama girişi: harita, oyun ekranı, can sistemi, reklamlar, ayarlar, müzik ve bulmaca akışını bağlar.
 
 import './styles.css';
 import { Color } from './core/chess';
 import { ECONOMY, addLives, loseLife, msToNextLife, settleLives, starsFor } from './core/economy';
 import { Puzzle, PuzzlePack } from './core/puzzle';
-import { t } from './game/i18n';
+import { LOCALES, matchLanguage, setLanguage, t } from './game/i18n';
 import { LevelLibrary } from './game/levels';
 import { FlowUi, PuzzleFlow } from './game/puzzleFlow';
 import { SaveData, loadSave, writeSave } from './game/save';
@@ -13,6 +13,7 @@ import { Board3D } from './presentation/board3d';
 import { icon, installIconDefs } from './presentation/ui/icons';
 import { MapScreen } from './presentation/ui/map';
 import { MockAdService } from './services/ads';
+import { MusicPlayer } from './services/music';
 
 // Uygulamaya gömülü ilk paket(ler). Kalan paketler Aşama 4'te uzaktan indirilecek.
 const packs = import.meta.glob<PuzzlePack>('../content/puzzles/levels/pack-00[0-1].json', { eager: true, import: 'default' });
@@ -36,28 +37,68 @@ function boot(): void {
   const persist = () => writeSave(save);
   const now = () => Date.now();
   const lives = () => (save.lives = settleLives(save.lives, now(), ECONOMY.lives)).lives;
+  const deviceLanguage = () => matchLanguage(navigator.languages?.length ? navigator.languages : [navigator.language]);
+  setLanguage(save.settings.language ?? deviceLanguage());
 
-  const ads = new MockAdService(ECONOMY.ads.mockAdSeconds, { title: t('adTitle'), close: t('close'), reward: t('adReward') });
+  const ads = new MockAdService(ECONOMY.ads.mockAdSeconds, () => ({ title: t('adTitle'), close: t('close'), reward: t('adReward') }));
 
-  // ---- Statik simgeler ve metinler ----
+  // ---- Müzik: tarayıcı kuralı gereği ilk dokunuşta başlar ----
+  const music = new MusicPlayer();
+  music.setWorld(worldOf(Math.max(1, save.unlocked)));
+  music.setEnabled(save.settings.music);
+  const unlockAudio = () => music.resume();
+  window.addEventListener('pointerdown', unlockAudio, { capture: true });
+  document.addEventListener('visibilitychange', () => music.pauseForBackground(document.hidden));
+
+  // ---- Simgeler ----
   installIconDefs();
   all('[data-heart]').forEach((el) => (el.innerHTML = icon.heart()));
-  all('[data-heart-broken]').forEach((el) => (el.innerHTML = icon.heart()));
   all('[data-play-icon]').forEach((el) => (el.innerHTML = icon.play()));
   all('[data-video-icon]').forEach((el) => (el.innerHTML = icon.video()));
   all('[data-clock]').forEach((el) => (el.innerHTML = icon.clock()));
+  all('[data-open-settings]').forEach((el) => (el.innerHTML = icon.settings()));
+  all('[data-music-icon]').forEach((el) => (el.innerHTML = icon.music()));
+  all('[data-globe-icon]').forEach((el) => (el.innerHTML = icon.globe()));
+  all('[data-chevron]').forEach((el) => (el.innerHTML = icon.chevronDown()));
   $('btn-back').innerHTML = icon.back();
-  $('btn-back').setAttribute('aria-label', t('map'));
-  $('level-label').textContent = t('level', { n: '' }).trim();
-  const texts: Record<string, string> = {
-    'btn-next': t('next'), 'result-ribbon': t('levelComplete', { n: '' }), 'btn-result-map': t('backToMap'), 'tries-title': t('outOfTriesTitle'),
-    'give-up-label': t('giveUp'), 'give-up-note': t('loseLifeNote'), 'nolives-title': t('noLivesTitle'),
-    'ad-life-label': t('watchAdLife'), 'btn-nolives-ok': t('ok'), 'leave-title': t('leaveTitle'),
-    'leave-text': t('leaveText'), 'btn-stay': t('stay'), 'btn-leave': t('leave'), 'promo-title': t('choosePromotion'),
-    'ad-tries-label': t('watchAdTries', { n: ECONOMY.level.adExtraMistakes }),
-    'tries-text': t('outOfTriesText', { n: ECONOMY.level.adExtraMistakes }),
+  $('btn-settings-close').innerHTML = icon.close();
+
+  // ---- Ekranlar ----
+  const map = new MapScreen($('map-scroll'), (n) => startLevel(n));
+  const canvas = $<HTMLCanvasElement>('board');
+  let board: Board3D | null = null; // ilk oyunda oluşturulur (harita açılışı hızlı olsun)
+  let flow: PuzzleFlow | null = null;
+  let level = 1;
+  let currentPuzzle: Puzzle | null = null;
+  const playable = () => Math.min(save.unlocked, library.count);
+
+  /** Dile bağlı tüm metinleri yazar; dil değişince yeniden çağrılır. */
+  const applyTexts = () => {
+    const texts: Record<string, string> = {
+      'btn-next': t('next'), 'btn-result-map': t('map'), 'tries-title': t('outOfTriesTitle'),
+      'give-up-label': t('giveUp'), 'give-up-note': t('loseLifeNote'), 'nolives-title': t('noLivesTitle'),
+      'ad-life-label': t('watchAdLife'), 'btn-nolives-ok': t('ok'), 'leave-title': t('leaveTitle'),
+      'leave-text': t('leaveText'), 'btn-stay': t('stay'), 'btn-leave': t('leave'), 'promo-title': t('choosePromotion'),
+      'ad-tries-label': t('watchAdTries', { n: ECONOMY.level.adExtraMistakes }), 'tries-text': t('outOfTriesText'),
+      'settings-title': t('settings'), 'set-music-label': t('music'), 'set-language-label': t('language'),
+      credits: t('credits'), 'level-label': t('levelWord'), 'map-play-label': t('playLevel', { n: playable() }),
+    };
+    for (const [id, text] of Object.entries(texts)) $(id).textContent = text;
+    $('btn-back').setAttribute('aria-label', t('map'));
+    $('btn-settings-close').setAttribute('aria-label', t('close'));
+    all('[data-open-settings]').forEach((el) => el.setAttribute('aria-label', t('settings')));
+    if (currentPuzzle) {
+      $('goal-text').textContent = t(goalKey(currentPuzzle));
+      const white = currentPuzzle.fen.split(' ')[1] === 'b';
+      $('side-label').textContent = t(white ? 'youPlayWhite' : 'youPlayBlack');
+    }
+    // Dil listesi: önce "cihaz dili", sonra her dil kendi adıyla.
+    const select = $<HTMLSelectElement>('set-language');
+    select.replaceChildren(new Option(t('languageAuto'), ''), ...LOCALES.map((l) => new Option(l.name, l.code)));
+    select.value = save.settings.language ?? '';
+    renderLives();
+    map.relabel();
   };
-  for (const [id, text] of Object.entries(texts)) $(id).textContent = text;
 
   // ---- Canlar ----
   const renderLives = () => {
@@ -75,14 +116,6 @@ function boot(): void {
   });
   setInterval(renderLives, 1000);
 
-  // ---- Ekranlar ----
-  const map = new MapScreen($('map-scroll'), (n) => startLevel(n));
-  const canvas = $<HTMLCanvasElement>('board');
-  let board: Board3D | null = null; // ilk oyunda oluşturulur (harita açılışı hızlı olsun)
-  let flow: PuzzleFlow | null = null;
-  let level = 1;
-  const playable = () => Math.min(save.unlocked, library.count);
-
   const refreshMap = () => {
     map.render({ levelCount: library.count, unlocked: playable(), stars: (l) => save.stars[l - 1] ?? 0 });
     $('map-play-label').textContent = t('playLevel', { n: playable() });
@@ -90,8 +123,10 @@ function boot(): void {
 
   const showMap = (celebrate = 0) => {
     flow?.stop();
+    currentPuzzle = null;
     $('screen-game').hidden = true;
     $('screen-map').hidden = false;
+    music.setWorld(worldOf(playable()));
     refreshMap();
     requestAnimationFrame(() => {
       map.scrollToLevel(playable());
@@ -110,7 +145,7 @@ function boot(): void {
   const status = $('status');
   const confetti = () => {
     const box = $('modal-result').querySelector('.confetti')!;
-    const colors = ['#ff5c8a', '#ffc93c', '#2fc98a', '#5ec8ff', '#7b5cff'];
+    const colors = ['#ffc35a', '#ff7a45', '#45e6a0', '#7cc4ff', '#ff4f6d'];
     box.replaceChildren(...Array.from({ length: 36 }, (_, i) => {
       const c = document.createElement('i');
       const a = (i / 36) * Math.PI * 2;
@@ -154,8 +189,8 @@ function boot(): void {
       if (level + 1 > save.unlocked && level < library.count) save.unlocked = level + 1;
       persist();
       $('result-stars').innerHTML = [1, 2, 3].map((s) => icon.star(s <= stars ? 'on' : '')).join('');
+      $('result-eyebrow').textContent = t('levelComplete', { n: level });
       $('result-title').textContent = stars === 3 ? t('perfect') : t('greatJob');
-      $('result-ribbon').textContent = t('levelComplete', { n: level });
       $('result-detail').textContent = mistakes === 0 ? t('solvedPerfect') : t('solvedMistakes', { n: mistakes });
       $('btn-next').hidden = level >= library.count;
       confetti();
@@ -193,7 +228,7 @@ function boot(): void {
     window.addEventListener('resize', layout);
     layout();
     // Uçtan uca testlerin oyunu sürebilmesi için küçük bir kanca.
-    (window as unknown as { __cq: unknown }).__cq = { flow: f, board: b, library, play: startLevel, save: () => save };
+    (window as unknown as { __cq: unknown }).__cq = { flow: f, board: b, library, play: startLevel, save: () => save, music };
     return f;
   };
 
@@ -208,16 +243,16 @@ function boot(): void {
     if (!puzzle || n > save.unlocked) return;
     if (lives() <= 0) { noLives(); return; }
     level = n;
+    currentPuzzle = puzzle;
     for (const id of ['modal-result', 'modal-tries', 'modal-leave']) $(id).hidden = true;
     $('screen-map').hidden = true;
     $('screen-game').hidden = false;
     applyWorldSky(n);
+    music.setWorld(worldOf(n));
     const f = ensureBoard();
     $('level-num').textContent = String(n);
-    $('goal-text').textContent = t(goalKey(puzzle));
-    const white = puzzle.fen.split(' ')[1] === 'b';
-    $('side-label').textContent = t(white ? 'youPlayWhite' : 'youPlayBlack');
-    $('side-swatch').classList.toggle('black', !white);
+    applyTexts();
+    $('side-swatch').classList.toggle('black', puzzle.fen.split(' ')[1] !== 'b');
     void f.start(puzzle, ECONOMY.level.mistakesAllowed);
   }
 
@@ -230,6 +265,28 @@ function boot(): void {
     renderLives();
     flashLifeLost();
   };
+
+  // ---- Ayarlar ----
+  const musicSwitch = $<HTMLInputElement>('set-music');
+  all('[data-open-settings]').forEach((el) => el.addEventListener('click', () => {
+    musicSwitch.checked = save.settings.music;
+    $<HTMLSelectElement>('set-language').value = save.settings.language ?? '';
+    $('modal-settings').hidden = false;
+  }));
+  $('btn-settings-close').addEventListener('click', () => ($('modal-settings').hidden = true));
+  $('modal-settings').addEventListener('click', (e) => { if (e.target === $('modal-settings')) $('modal-settings').hidden = true; });
+  musicSwitch.addEventListener('change', () => {
+    save.settings.music = musicSwitch.checked;
+    persist();
+    music.setEnabled(musicSwitch.checked);
+  });
+  $<HTMLSelectElement>('set-language').addEventListener('change', (e) => {
+    const value = (e.target as HTMLSelectElement).value;
+    save.settings.language = value || null;
+    persist();
+    setLanguage(value || deviceLanguage());
+    applyTexts();
+  });
 
   // ---- Düğmeler ----
   $('btn-map-play').addEventListener('click', () => startLevel(playable()));
@@ -272,7 +329,7 @@ function boot(): void {
     showMap(playable());
   });
 
-  renderLives();
+  applyTexts();
   if (library.count === 0) {
     $('map-play-label').textContent = t('loadError');
     return;

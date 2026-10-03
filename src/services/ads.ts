@@ -14,25 +14,26 @@ export interface IAdService {
 
 /** Geliştirme için sahte reklam: geri sayım biter → ödül; erken kapatılırsa ödül yok. */
 export class MockAdService implements IAdService {
-  constructor(private seconds: number, private labels: { title: string; close: string; reward: string }) {}
+  constructor(private seconds: number, private labels: () => { title: string; close: string; reward: string }) {}
 
   isRewardedReady(): boolean {
     return true;
   }
 
   showRewarded(placement: RewardedPlacement): Promise<AdResult> {
+    const labels = this.labels();
     return new Promise((resolve) => {
       const root = document.createElement('div');
       root.className = 'mock-ad';
       root.setAttribute('role', 'dialog');
-      root.setAttribute('aria-label', this.labels.title);
+      root.setAttribute('aria-label', labels.title);
       root.innerHTML = `
-        <button class="mock-ad-close" type="button" aria-label="${this.labels.close}">×</button>
+        <button class="mock-ad-close" type="button" aria-label="${labels.close}">×</button>
         <div class="mock-ad-body">
-          <div class="mock-ad-tag">${this.labels.title}</div>
+          <div class="mock-ad-tag">${labels.title}</div>
           <div class="mock-ad-count" aria-live="polite">${this.seconds}</div>
           <div class="mock-ad-bar"><i></i></div>
-          <div class="mock-ad-note">${this.labels.reward}</div>
+          <div class="mock-ad-note">${labels.reward}</div>
           <div class="mock-ad-placement">${placement}</div>
         </div>`;
       document.body.appendChild(root);

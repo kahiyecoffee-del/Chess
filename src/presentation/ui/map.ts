@@ -106,6 +106,15 @@ export class MapScreen {
     node?.scrollIntoView({ block: 'center', behavior: smooth ? 'smooth' : 'auto' });
   }
 
+  /** Dil değişince başlıkları ve düğüm etiketlerini yeniden yazar. */
+  relabel(): void {
+    for (const [w, section] of this.sections) {
+      if (!section.dataset.filled) continue;
+      section.querySelector('.world-banner')?.replaceWith(this.banner(world(w)));
+      this.refreshNodes(w);
+    }
+  }
+
   /** Yeni açılan düğümü zıplat. */
   celebrate(level: number): void {
     this.track.querySelector<HTMLElement>(`[data-level="${level}"]`)?.classList.add('just-unlocked');

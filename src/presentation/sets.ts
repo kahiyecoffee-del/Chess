@@ -27,7 +27,7 @@ export interface BoardSetDef {
   light: SurfaceDef;
   dark: SurfaceDef;
   surface: MaterialDef; // karelerin malzeme özellikleri (renk dokudan gelir)
-  frame: MaterialDef & { grain: string };
+  frame: MaterialDef & { base: string; grain: string };
   inlay: MaterialDef; // çerçevedeki ince kakma şerit
   label: string; // koordinat harfleri
 }
@@ -51,9 +51,9 @@ export const BOARD_SETS: Record<string, BoardSetDef> = {
     light: { base: '#dcbc8a', grain: '#b8925e' },
     dark: { base: '#7e4a2b', grain: '#552e18' },
     surface: { color: '#ffffff', roughness: 0.42, metalness: 0, clearcoat: 0.55, clearcoatRoughness: 0.18 },
-    frame: { color: '#ffffff', roughness: 0.38, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.1, grain: '#2a160c' },
-    inlay: { color: '#d8ae55', roughness: 0.28, metalness: 1 },
-    label: '#e9cf8f',
+    frame: { color: '#ffffff', roughness: 0.45, metalness: 0, clearcoat: 0.8, clearcoatRoughness: 0.2, base: '#262a36', grain: '#1b1e28' },
+    inlay: { color: '#ffb547', roughness: 0.3, metalness: 1 },
+    label: '#ffd28a',
   },
 };
 

@@ -142,7 +142,7 @@ export class Board3D {
     this.group.add(surface);
 
     const outer = 8 + FRAME * 2;
-    const frameTex = frameTexture(set.frame.grain);
+    const frameTex = frameTexture(set.frame.base, set.frame.grain);
     frameTex.repeat.set(3, 3);
     const frame = new THREE.Mesh(new RoundedBoxGeometry(outer, 0.34, outer, 4, 0.1), material(set.frame, frameTex));
     frame.position.y = -0.185; // üst yüzü oyun alanının biraz altında (z-fighting olmasın)
@@ -174,7 +174,7 @@ export class Board3D {
       c.width = c.height = 64;
       const g = c.getContext('2d')!;
       g.fillStyle = set.label;
-      g.font = '700 38px "Baloo 2", Nunito, sans-serif';
+      g.font = '700 38px Outfit, Manrope, sans-serif';
       g.textAlign = 'center';
       g.textBaseline = 'middle';
       g.fillText(text, 32, 35);

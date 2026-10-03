@@ -81,11 +81,11 @@ export function boardTexture(light: SurfaceDef, dark: SurfaceDef): THREE.CanvasT
   return toTexture(c);
 }
 
-export function frameTexture(grain: string): THREE.CanvasTexture {
+export function frameTexture(base: string, grain: string): THREE.CanvasTexture {
   const c = document.createElement('canvas');
   c.width = c.height = 512;
   const g = c.getContext('2d')!;
-  paintWood(g, 0, 0, 512, 512, { base: '#4a2a18', grain }, false, rng(7));
+  paintWood(g, 0, 0, 512, 512, { base, grain }, false, rng(7));
   const t = toTexture(c);
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
   return t;

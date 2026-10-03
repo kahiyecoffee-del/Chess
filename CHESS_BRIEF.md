@@ -81,7 +81,7 @@ Sen bu projede baş geliştiricimsin. Benimle birlikte Google Play'e (sonra App 
 - Mimari: `src/core` (kural motoru, bulmaca modeli, analiz, ekonomi), `src/game` (seviye akışı, ilerleme, metinler), `src/presentation` (3D tahta, animasyonlar, girdi), `src/services` (ads, IAP, save, analytics, remote config, içerik indirme — Aşama 3–4).
 - Kayıt: yerel JSON, sürüm numarası ve migrasyon. Sonra Google Play Games ile bulut kaydı (Aşama 4).
 - Performans: orta seviye Android'de 60 FPS, ilk açılış < 5 sn, APK/AAB hedef < 100 MB.
-- Dil: İngilizce varsayılan; Türkçe, İspanyolca, Portekizce, Hintçe sonradan. Tüm metinler `src/game/i18n.ts` tablolarında.
+- Dil: **35 dil** (en çok konuşulanlar; Arapça, Urduca, Farsça sağdan sola). Varsayılan cihaz dili, ayarlardan değiştirilebilir. Metinler `src/game/i18n.ts` + `src/game/locales/`. Yayından önce ana dil kontrolü önerilir.
 
 ## 7. 3D görsel ve animasyon
 
@@ -95,6 +95,7 @@ Sen bu projede baş geliştiricimsin. Benimle birlikte Google Play'e (sonra App 
   - Yanlış hamle: taş geri kayar, hafif titreşim
 - Asset'ler: İlk aşamada low-poly taşlar **tamamen kodla** üretilir (`pieces.ts`). Taş ve tahta görünümü veri tabanlı "set" tanımlarıyla değiştirilebilir (`sets.ts`; kozmetik mağaza da bunu kullanacak).
 - Ses ve dokunsal geri bildirim: taş sesi, mat fanfarı, haptic.
+- **Arka plan müziği:** ses dosyası olmadan WebAudio ile gerçek zamanlı üretilir (`src/services/music.ts`); her dünyada farklı ton. Ayarlardan açılıp kapanır.
 
 ## 8. Analitik ve uzaktan ayar (Aşama 4)
 
@@ -139,4 +140,5 @@ Firebase Analytics + Remote Config + Crashlytics. Olaylar: seviye başlangıç/b
 | 2026-10-03 | Paket adı geçici: `com.checkmatequest.app` | Şirket kurulumu sürüyor; Aşama 5'ten önce kesinleşecek. |
 | 2026-10-03 | Arayüz "tatlı ve eğlenceli" (oyuncak kutusu teması); Candy Crush tarzı kıvrımlı yol haritası öne alındı | Kullanıcı isteği. |
 | 2026-10-03 | Seviye başına 3 hata hakkı; bitince reklamla +3 hak veya vazgeç (−1 can); 5 can, 30 dk'da 1 dolum | Kullanıcı isteği. Sayılar `config/economy.json`'da. |
+| 2026-10-03 | Arayüz modern koyu cam stiline geçti; ayarlar (müzik, dil), 35 dil, üretilen arka plan müziği eklendi | Kullanıcı isteği. |
 | 2026-10-03 | Reklamlar şimdilik `MockAdService` (ekranda "Test ad"); AdMob test ID'leri Aşama 3'te | Brifteki IAdService planı. |
