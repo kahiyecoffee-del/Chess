@@ -6,7 +6,7 @@
 <title>Checkmate Quest</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;700;800;900&display=swap">
 </head>
 <body>
 <div id="app">
@@ -19,15 +19,16 @@
         <span class="lives-heart"><span data-heart></span><b data-lives-count>5</b></span>
         <span class="lives-timer" data-lives-timer>Full</span>
       </div>
-      <div class="brand"><span class="brand-mark">♚</span><span>Checkmate<br>Quest</span></div>
+      <div class="brand"><span class="brand-mark">♚</span><span class="brand-text">Checkmate<b>Quest</b></span></div>
     </header>
     <div class="map-bottom">
-      <button id="btn-map-play" class="candy-btn big" type="button"><span data-play-icon></span><span id="map-play-label">Play level 1</span></button>
+      <button id="btn-map-play" class="btn btn-gold big" type="button"><span data-play-icon></span><span id="map-play-label">Play level 1</span></button>
     </div>
   </section>
 
   <!-- Oyun -->
   <section id="screen-game" class="screen game-screen" hidden>
+    <div class="spotlight" aria-hidden="true"></div>
     <canvas id="board" aria-label="Chess board"></canvas>
     <header class="hud-top">
       <button id="btn-back" class="round-btn" type="button" aria-label="Map"></button>
@@ -53,12 +54,13 @@
   <div id="modal-result" class="modal" hidden>
     <div class="card result-card">
       <div class="confetti" aria-hidden="true"></div>
+      <div class="ribbon"><span id="result-ribbon">Level complete</span></div>
       <div id="result-stars" class="result-stars"></div>
       <h2 id="result-title" class="card-title">Great job!</h2>
       <p id="result-detail" class="card-text">Solved with no mistakes</p>
       <div class="card-actions">
-        <button id="btn-next" class="candy-btn" type="button">Next level</button>
-        <button id="btn-result-map" class="soft-btn" type="button">Map</button>
+        <button id="btn-next" class="btn btn-gold" type="button">Next level</button>
+        <button id="btn-result-map" class="btn btn-ghost" type="button">Map</button>
       </div>
     </div>
   </div>
@@ -69,8 +71,8 @@
       <h2 id="tries-title" class="card-title">Out of tries!</h2>
       <p id="tries-text" class="card-text"></p>
       <div class="card-actions">
-        <button id="btn-ad-tries" class="candy-btn" type="button"><span data-play-icon></span><span id="ad-tries-label">Watch ad</span></button>
-        <button id="btn-give-up" class="soft-btn" type="button"><span id="give-up-label">Give up</span><small id="give-up-note">Costs 1 life</small></button>
+        <button id="btn-ad-tries" class="btn btn-green" type="button"><span data-video-icon></span><span id="ad-tries-label">Watch ad</span></button>
+        <button id="btn-give-up" class="btn btn-ghost" type="button"><span id="give-up-label">Give up</span><small id="give-up-note">Costs 1 life</small></button>
       </div>
       <p id="tries-note" class="card-note" hidden></p>
     </div>
@@ -82,8 +84,8 @@
       <h2 id="nolives-title" class="card-title">No lives left</h2>
       <p id="nolives-text" class="card-text"></p>
       <div class="card-actions">
-        <button id="btn-ad-life" class="candy-btn" type="button"><span data-play-icon></span><span id="ad-life-label">Watch ad: +1 life</span></button>
-        <button id="btn-nolives-ok" class="soft-btn" type="button">OK</button>
+        <button id="btn-ad-life" class="btn btn-green" type="button"><span data-video-icon></span><span id="ad-life-label">Watch ad: +1 life</span></button>
+        <button id="btn-nolives-ok" class="btn btn-ghost" type="button">OK</button>
       </div>
       <p id="nolives-note" class="card-note" hidden></p>
     </div>
@@ -94,8 +96,8 @@
       <h2 id="leave-title" class="card-title">Leave this level?</h2>
       <p id="leave-text" class="card-text"></p>
       <div class="card-actions">
-        <button id="btn-stay" class="candy-btn" type="button">Keep playing</button>
-        <button id="btn-leave" class="soft-btn" type="button">Leave</button>
+        <button id="btn-stay" class="btn btn-gold" type="button">Keep playing</button>
+        <button id="btn-leave" class="btn btn-ghost" type="button">Leave</button>
       </div>
     </div>
   </div>

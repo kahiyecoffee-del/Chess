@@ -28,7 +28,7 @@ export class PuzzleFlow {
   constructor(private board: Board3D, canvas: HTMLElement, private ui: FlowUi) {
     this.input = new BoardInput(canvas, board, {
       canDrag: (sq) => this.isOwnPiece(sq),
-      onTap: (sq) => void this.tap(sq),
+      onTap: (hit) => void this.tap(hit),
       onDragStart: (sq) => this.select(sq),
       onDragOver: (sq) => this.board.showHover(this.targets.some((m) => moveTo(m) === sq) ? sq : -1),
       onDrop: (from, sq) => void this.drop(from, sq),
@@ -38,6 +38,11 @@ export class PuzzleFlow {
   /** Uçtan uca testler için: beklenen hamle. */
   get expectedMove(): string | null {
     return this.session?.expectedMove ?? null;
+  }
+
+  /** Uçtan uca testler için: seçili kare. */
+  get selectedSquare(): number {
+    return this.selected;
   }
 
   /** Uçtan uca testler için: beklenmeyen, mat etmeyen yasal bir oyuncu hamlesi. */
@@ -142,15 +147,20 @@ export class PuzzleFlow {
     this.board.clearSelection();
   }
 
-  private async tap(sq: number): Promise<void> {
+  private async tap({ piece, plane }: { piece: number; plane: number }): Promise<void> {
     if (!this.accepting) return;
-    if (this.selected >= 0 && this.targets.some((m) => moveTo(m) === sq)) {
-      await this.attempt(this.selected, sq, false);
-    } else if (this.isOwnPiece(sq) && sq !== this.selected) {
-      this.select(sq);
-    } else {
-      this.deselect();
+    const isTarget = (sq: number) => sq >= 0 && this.targets.some((m) => moveTo(m) === sq);
+    if (this.selected >= 0) {
+      // Önce tahta yüzeyindeki kare: öndeki uzun bir taş arkadaki hedefi örtmüş olabilir.
+      const target = isTarget(plane) ? plane : isTarget(piece) ? piece : -1;
+      if (target >= 0) {
+        await this.attempt(this.selected, target, false);
+        return;
+      }
     }
+    const own = this.isOwnPiece(piece) ? piece : this.isOwnPiece(plane) ? plane : -1;
+    if (own >= 0 && own !== this.selected) this.select(own);
+    else this.deselect();
   }
 
   private async drop(from: number, sq: number): Promise<void> {

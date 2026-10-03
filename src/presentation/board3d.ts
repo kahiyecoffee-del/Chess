@@ -6,13 +6,19 @@ import {
   rankOf,
 } from '../core/chess';
 import { PIECE_HEIGHT, pieceGeometry } from './pieces';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { BOARD_SETS, BoardSetDef, DEFAULT_BOARD_SET, DEFAULT_PIECE_SET, MaterialDef, PIECE_SETS, PieceSetDef } from './sets';
+import { boardTexture, captureTexture, contactShadowTexture, dotTexture, frameTexture, glowSquareTexture } from './textures';
 import { Tweener, ease } from './tween';
 
-const material = (d: MaterialDef) =>
-  new THREE.MeshStandardMaterial({ color: d.color, roughness: d.roughness, metalness: d.metalness });
+const material = (d: MaterialDef, map?: THREE.Texture) =>
+  new THREE.MeshPhysicalMaterial({
+    color: d.color, roughness: d.roughness, metalness: d.metalness, map: map ?? null,
+    clearcoat: d.clearcoat ?? 0, clearcoatRoughness: d.clearcoatRoughness ?? 0.2, sheen: d.sheen ?? 0,
+  });
 
-const FRAME = 0.42; // tahta çerçevesi genişliği
+const FRAME = 0.5; // tahta çerçevesi genişliği
 const MAX_USER_ROTATION = 0.38; // radyan; iki parmakla döndürme sınırı
 const LIE_HEIGHT = 0.3; // yatan taşın tahta üstündeki yüksekliği
 
@@ -21,23 +27,25 @@ export interface Layout {
   bottomInset: number;
 }
 
+const overlayMat = (map: THREE.Texture, opacity = 1) =>
+  new THREE.MeshBasicMaterial({ map, transparent: true, opacity, depthWrite: false, toneMapped: false });
+
 export class Board3D {
   readonly renderer: THREE.WebGLRenderer;
   readonly scene = new THREE.Scene();
-  readonly camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
+  readonly camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
   readonly tweener = new Tweener();
   readonly group = new THREE.Group(); // tahta + taşlar (döndürme ve yön çevirme bunun üzerinde)
 
   private pieces = new Map<number, THREE.Mesh>();
-  private pieceMaterials: [THREE.MeshStandardMaterial, THREE.MeshStandardMaterial];
-  private squareMeshes: THREE.Mesh[] = [];
+  private pieceMaterials: [THREE.MeshPhysicalMaterial, THREE.MeshPhysicalMaterial];
   private overlay = new THREE.Group();
   private labels: THREE.Mesh[] = [];
   private checkRing: THREE.Mesh;
   private orientation: Color = WHITE;
   private userRotation = 0;
-  private cameraTarget = new THREE.Vector3(0, 0, 0.25);
-  private cameraDir = new THREE.Vector3(0, Math.sin(60 * Math.PI / 180), Math.cos(60 * Math.PI / 180));
+  private cameraTarget = new THREE.Vector3(0, 0, 0.3);
+  private cameraDir = new THREE.Vector3(0, Math.sin(58 * Math.PI / 180), Math.cos(58 * Math.PI / 180));
   private cameraDistance = 20;
   private zoom = 1; // mat sinematiği için
   private shake = 0;
@@ -45,11 +53,11 @@ export class Board3D {
   private raycaster = new THREE.Raycaster();
   private lastTime = performance.now();
   private hlMaterials = {
-    selected: new THREE.MeshBasicMaterial({ color: '#f2c14e', transparent: true, opacity: 0.45, depthWrite: false }),
-    last: new THREE.MeshBasicMaterial({ color: '#e8d27a', transparent: true, opacity: 0.32, depthWrite: false }),
-    target: new THREE.MeshBasicMaterial({ color: '#1d2a1e', transparent: true, opacity: 0.38, depthWrite: false }),
-    capture: new THREE.MeshBasicMaterial({ color: '#c0392b', transparent: true, opacity: 0.6, depthWrite: false }),
-    hover: new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.18, depthWrite: false }),
+    selected: overlayMat(glowSquareTexture('#ffd36b'), 0.95),
+    last: overlayMat(glowSquareTexture('#f5d77a', 0.75), 0.75),
+    target: overlayMat(dotTexture('rgba(20,16,30,0.55)')),
+    capture: overlayMat(captureTexture('rgba(214,54,64,0.85)')),
+    hover: overlayMat(glowSquareTexture('#ffffff', 0.6), 0.6),
   };
 
   constructor(private canvas: HTMLCanvasElement, pieceSet: PieceSetDef = PIECE_SETS[DEFAULT_PIECE_SET],
@@ -59,8 +67,14 @@ export class Board3D {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
-    this.renderer.toneMapping = THREE.NeutralToneMapping;
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.0;
+
+    // Kodla üretilen stüdyo ortamı: cilalı yüzeylere gerçekçi yansıma verir.
+    const pmrem = new THREE.PMREMGenerator(this.renderer);
+    this.scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    this.scene.environmentIntensity = 0.55;
+    pmrem.dispose();
 
     this.pieceMaterials = [material(pieceSet.white), material(pieceSet.black)];
     this.buildLights();
@@ -68,10 +82,7 @@ export class Board3D {
     this.scene.add(this.group);
     this.group.add(this.overlay);
 
-    this.checkRing = new THREE.Mesh(
-      new THREE.RingGeometry(0.3, 0.47, 40),
-      new THREE.MeshBasicMaterial({ color: '#ff3b2f', transparent: true, opacity: 0, depthWrite: false }),
-    );
+    this.checkRing = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 1.3), overlayMat(dotTexture('#ff3b30'), 0));
     this.checkRing.rotation.x = -Math.PI / 2;
     this.checkRing.position.y = 0.012;
     this.checkRing.visible = false;
@@ -81,8 +92,8 @@ export class Board3D {
       if (!this.checkRing.visible) return;
       pulse += dt * 4.2;
       const k = 0.5 + 0.5 * Math.sin(pulse);
-      (this.checkRing.material as THREE.MeshBasicMaterial).opacity = 0.35 + 0.5 * k;
-      this.checkRing.scale.setScalar(0.9 + 0.18 * k);
+      (this.checkRing.material as THREE.MeshBasicMaterial).opacity = 0.45 + 0.45 * k;
+      this.checkRing.scale.setScalar(0.85 + 0.2 * k);
     });
 
     this.resize();
@@ -104,51 +115,56 @@ export class Board3D {
   // ---- Kurulum ----
 
   private buildLights(): void {
-    this.scene.add(new THREE.HemisphereLight('#fff6ea', '#6a4a8a', 1.25));
-    const key = new THREE.DirectionalLight('#ffe9cc', 2.3);
-    key.position.set(-4, 10, 5);
+    this.scene.add(new THREE.HemisphereLight('#fff4e6', '#3a2a4a', 0.5));
+    const key = new THREE.DirectionalLight('#fff1dc', 2.2);
+    key.position.set(-3.5, 11, 4.5);
     key.castShadow = true;
-    key.shadow.mapSize.set(1024, 1024);
+    key.shadow.mapSize.set(2048, 2048);
     key.shadow.camera.left = -6;
     key.shadow.camera.right = 6;
     key.shadow.camera.top = 6;
     key.shadow.camera.bottom = -6;
-    key.shadow.bias = -0.0008;
+    key.shadow.radius = 3;
+    key.shadow.bias = -0.0005;
     key.shadow.normalBias = 0.02;
     this.scene.add(key);
-    const rim = new THREE.DirectionalLight('#9fb4ff', 0.45);
-    rim.position.set(5, 4, -6);
+    const rim = new THREE.DirectionalLight('#b9c8ff', 0.7);
+    rim.position.set(4, 5, -7);
     this.scene.add(rim);
   }
 
   private buildBoard(set: BoardSetDef): void {
-    const light = material(set.light), dark = material(set.dark);
-    const sqGeo = new THREE.BoxGeometry(1, 0.12, 1);
-    for (let sq = 0; sq < 64; sq++) {
-      const isLight = (fileOf(sq) + rankOf(sq)) % 2 === 1;
-      const mesh = new THREE.Mesh(sqGeo, isLight ? light : dark);
-      const p = this.squarePosition(sq);
-      mesh.position.set(p.x, -0.06, p.z);
-      mesh.receiveShadow = true;
-      mesh.userData.square = sq;
-      this.squareMeshes.push(mesh);
-      this.group.add(mesh);
-    }
-    const frameMat = material(set.frame);
+    // Oyun alanı: tek parça, ahşap damarlı doku.
+    const surface = new THREE.Mesh(new THREE.PlaneGeometry(8, 8), material(set.surface, boardTexture(set.light, set.dark)));
+    surface.rotation.x = -Math.PI / 2;
+    surface.position.y = 0.001;
+    surface.receiveShadow = true;
+    this.group.add(surface);
+
     const outer = 8 + FRAME * 2;
-    const frame = new THREE.Mesh(new THREE.BoxGeometry(outer, 0.2, outer), frameMat);
-    frame.position.y = -0.11;
+    const frameTex = frameTexture(set.frame.grain);
+    frameTex.repeat.set(3, 3);
+    const frame = new THREE.Mesh(new RoundedBoxGeometry(outer, 0.34, outer, 4, 0.1), material(set.frame, frameTex));
+    frame.position.y = -0.185; // üst yüzü oyun alanının biraz altında (z-fighting olmasın)
     frame.receiveShadow = true;
+    frame.castShadow = true;
     this.group.add(frame);
-    const plinth = new THREE.Mesh(new THREE.BoxGeometry(outer + 0.3, 0.3, outer + 0.3), material(set.plinth));
-    plinth.position.y = -0.33;
-    this.group.add(plinth);
-    // Şeffaf zemin: yalnızca gölgeyi gösterir, arka plan CSS'ten gelir.
-    const shadowCatcher = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.ShadowMaterial({ opacity: 0.22 }));
-    shadowCatcher.rotation.x = -Math.PI / 2;
-    shadowCatcher.position.y = -0.48;
-    shadowCatcher.receiveShadow = true;
-    this.scene.add(shadowCatcher);
+
+    // Altın kakma şerit: oyun alanının hemen çevresinde ince bir çerçeve.
+    const inlayMat = material(set.inlay);
+    const w = 8.16, t = 0.05;
+    for (const [x, z, sx, sz] of [[0, w / 2, w + t, t], [0, -w / 2, w + t, t], [w / 2, 0, t, w], [-w / 2, 0, t, w]]) {
+      const bar = new THREE.Mesh(new THREE.BoxGeometry(sx, 0.012, sz), inlayMat);
+      bar.position.set(x, 0.002, z);
+      this.group.add(bar);
+    }
+
+    // Tahtanın altında yumuşak temas gölgesi + taşların gerçek gölgesi.
+    const contact = new THREE.Mesh(new THREE.PlaneGeometry(13, 13),
+      new THREE.MeshBasicMaterial({ map: contactShadowTexture(), transparent: true, depthWrite: false, color: '#000000' }));
+    contact.rotation.x = -Math.PI / 2;
+    contact.position.y = -0.36;
+    this.group.add(contact);
     this.buildLabels(set);
   }
 
@@ -157,17 +173,15 @@ export class Board3D {
       const c = document.createElement('canvas');
       c.width = c.height = 64;
       const g = c.getContext('2d')!;
-      g.fillStyle = set.light.color;
-      g.font = '700 40px Fredoka, Nunito, sans-serif';
+      g.fillStyle = set.label;
+      g.font = '700 38px "Baloo 2", Nunito, sans-serif';
       g.textAlign = 'center';
       g.textBaseline = 'middle';
-      g.fillText(text, 32, 34);
+      g.fillText(text, 32, 35);
       const tex = new THREE.CanvasTexture(c);
       tex.colorSpace = THREE.SRGBColorSpace;
-      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.3),
-        new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }));
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(0.32, 0.32), overlayMat(tex, 0.9));
       mesh.rotation.x = -Math.PI / 2;
-      mesh.position.y = 0.002;
       this.group.add(mesh);
       this.labels.push(mesh);
       return mesh;
@@ -184,11 +198,11 @@ export class Board3D {
     const flip = this.orientation === BLACK;
     for (const mesh of this.labels) {
       const { kind, index } = mesh.userData as { kind: string; index: number };
-      const edge = 4 + FRAME / 2;
+      const edge = 4 + FRAME / 2 + 0.03;
       if (kind === 'file') {
-        mesh.position.set(index - 3.5, 0.002, flip ? -edge : edge);
+        mesh.position.set(index - 3.5, 0.003, flip ? -edge : edge);
       } else {
-        mesh.position.set(flip ? edge : -edge, 0.002, 3.5 - index);
+        mesh.position.set(flip ? edge : -edge, 0.003, 3.5 - index);
       }
       mesh.rotation.z = flip ? Math.PI : 0;
     }
@@ -212,13 +226,24 @@ export class Board3D {
     return this.raycaster.ray;
   }
 
-  /** Ekran noktasının altındaki kare: önce taşlara, sonra tahta yüzeyine bakar. */
-  squareAt(clientX: number, clientY: number): number {
+  /**
+   * Ekran noktasının altındaki kareler: `piece` = dokunulan taş gövdesinin karesi,
+   * `plane` = tahta yüzeyindeki kare. Uzun taşlar arkadaki kareyi örtebildiği için ikisi de gerekir.
+   */
+  squaresAt(clientX: number, clientY: number): { piece: number; plane: number } {
     this.ray(clientX, clientY);
     const hits = this.raycaster.intersectObjects([...this.pieces.values()], false);
-    if (hits.length) return hits[0].object.userData.square as number;
     const p = this.pointOnBoard(clientX, clientY, 0);
-    return p ? this.localToSquare(p.x, p.z) : -1;
+    return {
+      piece: hits.length ? (hits[0].object.userData.square as number) : -1,
+      plane: p ? this.localToSquare(p.x, p.z) : -1,
+    };
+  }
+
+  /** Tek kare gereken yerler için: önce taş, sonra yüzey. */
+  squareAt(clientX: number, clientY: number): number {
+    const { piece, plane } = this.squaresAt(clientX, clientY);
+    return piece >= 0 ? piece : plane;
   }
 
   /** Ekran noktasının belirli yükseklikteki yatay düzlemdeki karşılığı (grup koordinatlarında). */
@@ -327,7 +352,7 @@ export class Board3D {
   private removePiece(mesh: THREE.Mesh): void {
     this.group.remove(mesh);
     if (Array.isArray(mesh.material)) return;
-    if (!this.pieceMaterials.includes(mesh.material as THREE.MeshStandardMaterial)) mesh.material.dispose();
+    if (!this.pieceMaterials.includes(mesh.material as THREE.MeshPhysicalMaterial)) mesh.material.dispose();
   }
 
   setPosition(pos: Position): void {
@@ -344,12 +369,11 @@ export class Board3D {
   // ---- Vurgular ----
 
   private addOverlay(sq: number, mat: THREE.Material, kind: 'square' | 'dot' | 'ring', tag: string): void {
-    const geo = kind === 'square' ? new THREE.PlaneGeometry(1, 1)
-      : kind === 'dot' ? new THREE.CircleGeometry(0.15, 24) : new THREE.RingGeometry(0.38, 0.47, 32);
-    const mesh = new THREE.Mesh(geo, mat);
+    const size = kind === 'dot' ? 0.42 : 1;
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(size, size), mat);
     mesh.rotation.x = -Math.PI / 2;
     const p = this.squarePosition(sq);
-    mesh.position.set(p.x, kind === 'square' ? 0.004 : 0.008, p.z);
+    mesh.position.set(p.x, kind === 'square' ? 0.005 : 0.008, p.z);
     mesh.userData.tag = tag;
     mesh.renderOrder = 1;
     this.overlay.add(mesh);
@@ -440,7 +464,7 @@ export class Board3D {
     dir.normalize();
     const axis = new THREE.Vector3(dir.z, 0, -dir.x); // devrilme ekseni
     const q0 = mesh.quaternion.clone();
-    const mat = (mesh.material as THREE.MeshStandardMaterial).clone();
+    const mat = (mesh.material as THREE.MeshPhysicalMaterial).clone();
     mat.transparent = true;
     mesh.material = mat;
     const pos = mesh.position.clone();
@@ -569,7 +593,7 @@ export class Board3D {
   resetCamera(): void {
     this.tweener.timeScale = 1;
     this.zoom = 1;
-    this.cameraTarget.set(0, 0, 0.25);
+    this.cameraTarget.set(0, 0, 0.3);
     this.resize();
   }
 

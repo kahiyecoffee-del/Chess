@@ -49,6 +49,7 @@ const en = {
   'world.lantern': 'Lantern Town',
   'world.volcano': 'Volcano Peak',
   worldLevels: 'Levels {a}–{b}',
+  worldN: 'World {n}',
   outOfTriesTitle: 'Out of tries!',
   outOfTriesText: 'Watch a short ad to get {n} more tries and keep this puzzle. Or give up and lose a life.',
   watchAdTries: 'Watch ad: +{n} tries',
@@ -67,6 +68,7 @@ const en = {
   adReward: 'Real ads come later. Wait for the timer to get your reward.',
   adNoReward: 'The ad was closed early, so there is no reward.',
   greatJob: 'Great job!',
+  levelComplete: 'Level {n} complete',
   perfect: 'Perfect!',
 };
 

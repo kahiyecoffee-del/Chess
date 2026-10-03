@@ -5,6 +5,9 @@ export interface MaterialDef {
   color: string;
   roughness: number;
   metalness: number;
+  clearcoat?: number; // lake / cila katmanı
+  clearcoatRoughness?: number;
+  sheen?: number;
 }
 
 export interface PieceSetDef {
@@ -13,43 +16,46 @@ export interface PieceSetDef {
   black: MaterialDef;
 }
 
+/** Tahta karelerinin dokusu kodla çizilir: iki ton ve damar rengi. */
+export interface SurfaceDef {
+  base: string;
+  grain: string;
+}
+
 export interface BoardSetDef {
   id: string;
-  light: MaterialDef;
-  dark: MaterialDef;
-  frame: MaterialDef;
-  plinth: MaterialDef; // çerçevenin altındaki kaide
+  light: SurfaceDef;
+  dark: SurfaceDef;
+  surface: MaterialDef; // karelerin malzeme özellikleri (renk dokudan gelir)
+  frame: MaterialDef & { grain: string };
+  inlay: MaterialDef; // çerçevedeki ince kakma şerit
+  label: string; // koordinat harfleri
 }
 
 export const PIECE_SETS: Record<string, PieceSetDef> = {
+  tournament: {
+    id: 'tournament',
+    white: { color: '#f4ead8', roughness: 0.32, metalness: 0, clearcoat: 0.9, clearcoatRoughness: 0.12, sheen: 0.2 },
+    black: { color: '#1f1a24', roughness: 0.3, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08 },
+  },
   candy: {
     id: 'candy',
-    white: { color: '#fffaf0', roughness: 0.28, metalness: 0 },
-    black: { color: '#4a2f7a', roughness: 0.26, metalness: 0.02 },
-  },
-  classic: {
-    id: 'classic',
-    white: { color: '#efe4cf', roughness: 0.42, metalness: 0.02 },
-    black: { color: '#2c2420', roughness: 0.32, metalness: 0.08 },
+    white: { color: '#fffaf0', roughness: 0.28, metalness: 0, clearcoat: 0.6, clearcoatRoughness: 0.2 },
+    black: { color: '#4a2f7a', roughness: 0.26, metalness: 0, clearcoat: 0.6, clearcoatRoughness: 0.2 },
   },
 };
 
 export const BOARD_SETS: Record<string, BoardSetDef> = {
-  toybox: {
-    id: 'toybox',
-    light: { color: '#fff1d6', roughness: 0.5, metalness: 0 },
-    dark: { color: '#f2a65a', roughness: 0.48, metalness: 0 },
-    frame: { color: '#7b5cff', roughness: 0.32, metalness: 0.02 },
-    plinth: { color: '#5a3fd1', roughness: 0.4, metalness: 0 },
-  },
-  walnut: {
-    id: 'walnut',
-    light: { color: '#e6d2ad', roughness: 0.62, metalness: 0 },
-    dark: { color: '#9a6a45', roughness: 0.58, metalness: 0 },
-    frame: { color: '#4b2e1f', roughness: 0.5, metalness: 0.05 },
-    plinth: { color: '#3a2318', roughness: 0.55, metalness: 0 },
+  royal: {
+    id: 'royal',
+    light: { base: '#dcbc8a', grain: '#b8925e' },
+    dark: { base: '#7e4a2b', grain: '#552e18' },
+    surface: { color: '#ffffff', roughness: 0.42, metalness: 0, clearcoat: 0.55, clearcoatRoughness: 0.18 },
+    frame: { color: '#ffffff', roughness: 0.38, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.1, grain: '#2a160c' },
+    inlay: { color: '#d8ae55', roughness: 0.28, metalness: 1 },
+    label: '#e9cf8f',
   },
 };
 
-export const DEFAULT_PIECE_SET = 'candy';
-export const DEFAULT_BOARD_SET = 'toybox';
+export const DEFAULT_PIECE_SET = 'tournament';
+export const DEFAULT_BOARD_SET = 'royal';

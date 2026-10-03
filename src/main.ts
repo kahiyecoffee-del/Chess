@@ -10,7 +10,7 @@ import { FlowUi, PuzzleFlow } from './game/puzzleFlow';
 import { SaveData, loadSave, writeSave } from './game/save';
 import { world, worldOf } from './game/worlds';
 import { Board3D } from './presentation/board3d';
-import { icon } from './presentation/ui/icons';
+import { icon, installIconDefs } from './presentation/ui/icons';
 import { MapScreen } from './presentation/ui/map';
 import { MockAdService } from './services/ads';
 
@@ -40,15 +40,17 @@ function boot(): void {
   const ads = new MockAdService(ECONOMY.ads.mockAdSeconds, { title: t('adTitle'), close: t('close'), reward: t('adReward') });
 
   // ---- Statik simgeler ve metinler ----
+  installIconDefs();
   all('[data-heart]').forEach((el) => (el.innerHTML = icon.heart()));
   all('[data-heart-broken]').forEach((el) => (el.innerHTML = icon.heart()));
   all('[data-play-icon]').forEach((el) => (el.innerHTML = icon.play()));
+  all('[data-video-icon]').forEach((el) => (el.innerHTML = icon.video()));
   all('[data-clock]').forEach((el) => (el.innerHTML = icon.clock()));
   $('btn-back').innerHTML = icon.back();
   $('btn-back').setAttribute('aria-label', t('map'));
   $('level-label').textContent = t('level', { n: '' }).trim();
   const texts: Record<string, string> = {
-    'btn-next': t('next'), 'btn-result-map': t('backToMap'), 'tries-title': t('outOfTriesTitle'),
+    'btn-next': t('next'), 'result-ribbon': t('levelComplete', { n: '' }), 'btn-result-map': t('backToMap'), 'tries-title': t('outOfTriesTitle'),
     'give-up-label': t('giveUp'), 'give-up-note': t('loseLifeNote'), 'nolives-title': t('noLivesTitle'),
     'ad-life-label': t('watchAdLife'), 'btn-nolives-ok': t('ok'), 'leave-title': t('leaveTitle'),
     'leave-text': t('leaveText'), 'btn-stay': t('stay'), 'btn-leave': t('leave'), 'promo-title': t('choosePromotion'),
@@ -153,6 +155,7 @@ function boot(): void {
       persist();
       $('result-stars').innerHTML = [1, 2, 3].map((s) => icon.star(s <= stars ? 'on' : '')).join('');
       $('result-title').textContent = stars === 3 ? t('perfect') : t('greatJob');
+      $('result-ribbon').textContent = t('levelComplete', { n: level });
       $('result-detail').textContent = mistakes === 0 ? t('solvedPerfect') : t('solvedMistakes', { n: mistakes });
       $('btn-next').hidden = level >= library.count;
       confetti();

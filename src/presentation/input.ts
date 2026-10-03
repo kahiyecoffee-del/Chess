@@ -4,8 +4,8 @@ import * as THREE from 'three';
 import { Board3D } from './board3d';
 
 export interface InputHandlers {
-  /** Kareye dokunuldu (sürükleme olmadan). */
-  onTap(sq: number): void;
+  /** Dokunuş (sürükleme olmadan): dokunulan taşın karesi ve tahta yüzeyindeki kare. */
+  onTap(hit: { piece: number; plane: number }): void;
   /** Bu karedeki taş sürüklenebilir mi? */
   canDrag(sq: number): boolean;
   onDragStart(sq: number): void;
@@ -20,7 +20,7 @@ const DOUBLE_TAP_MS = 300;
 export class BoardInput {
   enabled = true;
   private pointers = new Map<number, { x: number; y: number }>();
-  private press: { id: number; x: number; y: number; sq: number } | null = null;
+  private press: { id: number; x: number; y: number; sq: number; hit: { piece: number; plane: number } } | null = null;
   private dragging = false;
   private lastTap = 0;
   private pinchAngle: number | null = null;
@@ -47,7 +47,10 @@ export class BoardInput {
     }
     if (this.pointers.size > 2 || !this.enabled) return;
     this.el.setPointerCapture(e.pointerId);
-    this.press = { id: e.pointerId, x: e.clientX, y: e.clientY, sq: this.board.squareAt(e.clientX, e.clientY) };
+    const hit = this.board.squaresAt(e.clientX, e.clientY);
+    // Sürükleme için: dokunulan sürüklenebilir taş, yoksa yüzeydeki kare.
+    const sq = hit.piece >= 0 && this.h.canDrag(hit.piece) ? hit.piece : hit.plane;
+    this.press = { id: e.pointerId, x: e.clientX, y: e.clientY, sq, hit };
   };
 
   private move = (e: PointerEvent) => {
@@ -105,7 +108,7 @@ export class BoardInput {
     // Çift dokunuş görünümü sıfırlar; dokunuş yine de normal işlenir.
     if (now - this.lastTap < DOUBLE_TAP_MS) this.board.resetView();
     this.lastTap = now;
-    if (this.enabled) this.h.onTap(p.sq);
+    if (this.enabled) this.h.onTap(p.hit);
   };
 
   private cancel = (e: PointerEvent) => {

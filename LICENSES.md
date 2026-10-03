@@ -2,8 +2,8 @@
 
 | Component | Use | License | Shipped in app |
 |---|---|---|---|
-| [three.js](https://github.com/mrdoob/three.js) 0.186 | 3D rendering | MIT | Yes |
-| [Marcellus](https://fonts.google.com/specimen/Marcellus), [Figtree](https://fonts.google.com/specimen/Figtree) | UI fonts (loaded from Google Fonts in the preview; to be bundled in the app) | SIL Open Font License 1.1 | Yes |
+| [three.js](https://github.com/mrdoob/three.js) 0.186 (incl. RoomEnvironment, RoundedBoxGeometry, BufferGeometryUtils addons) | 3D rendering | MIT | Yes |
+| [Baloo 2](https://fonts.google.com/specimen/Baloo+2), [Nunito](https://fonts.google.com/specimen/Nunito) | UI fonts (loaded from Google Fonts in the preview; to be bundled in the app) | SIL Open Font License 1.1 | Yes |
 | [Vite](https://vitejs.dev) | Build tool | MIT | No |
 | [vite-plugin-singlefile](https://github.com/richardtallent/vite-plugin-singlefile) | Single-file preview build | MIT | No |
 | [TypeScript](https://www.typescriptlang.org) | Compiler | Apache-2.0 | No |

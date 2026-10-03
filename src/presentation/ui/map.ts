@@ -1,14 +1,18 @@
 // Macera haritası: kıvrımlı yol üzerinde seviye düğümleri; seviye 1 en altta, yukarı doğru ilerler.
-// Her dünya (100 seviye) ayrı bir bölüm; bölümler ekrana yaklaşınca doldurulur.
+// Her dünya (100 seviye) ayrı bir bölüm. Arazi canvas döşemelerine çizilir; döşemeler ekrana
+// yaklaşınca boyanır (uzun haritada bellek ve açılış süresi düşük kalsın).
 
 import { t } from '../../game/i18n';
-import { Decor, WORLD_SIZE, World, world, worldOf } from '../../game/worlds';
+import { WORLD_SIZE, World, world, worldOf } from '../../game/worlds';
 import { icon } from './icons';
+import { Item, drawGround, drawItem, drawPath, layoutItems, rng, shade } from './mapPainter';
 
-const GAP = 88; // iki düğüm arası dikey mesafe (px)
-const PAD = 70; // bölüm üst/alt boşluğu
-const BANNER = 96;
-const SECTION_HEIGHT = PAD * 2 + (WORLD_SIZE - 1) * GAP + BANNER;
+const GAP = 96; // iki düğüm arası dikey mesafe (px)
+const PAD = 80; // bölüm alt boşluğu
+const BANNER = 150; // bölüm üstünde dünya başlığı için boşluk
+const SECTION_HEIGHT = PAD + (WORLD_SIZE - 1) * GAP + BANNER;
+const TILE = 1024; // döşeme yüksekliği (CSS px)
+const SKY = 700; // bölüm tepesindeki gökyüzü geçişi
 
 export interface MapState {
   levelCount: number;
@@ -19,52 +23,37 @@ export interface MapState {
 /** Düğümün yatay konumu (% genişlik): yumuşak, düzensiz bir kıvrım. */
 function nodeX(level: number): number {
   const k = level - 1;
-  return 50 + 27 * Math.sin(k * 0.82) + 6 * Math.sin(k * 2.1 + 1);
+  return 50 + 26 * Math.sin(k * 0.78) + 7 * Math.sin(k * 1.9 + 1);
 }
 
 function nodeY(indexInWorld: number): number {
   return SECTION_HEIGHT - PAD - indexInWorld * GAP; // bölüm içinde, üstten px
 }
 
-function rng(seed: number): () => number {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let x = Math.imul(a ^ (a >>> 15), a | 1);
-    x ^= x + Math.imul(x ^ (x >>> 7), x | 61);
-    return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
-  };
+interface SectionData {
+  info: World;
+  width: number;
+  items: Item[];
+  pts: [number, number][];
 }
-
-const DECOR_SVG: Record<Decor, (c: string) => string> = {
-  tree: (c) => `<svg viewBox="0 0 40 48"><rect x="17" y="30" width="6" height="14" rx="2" fill="#a0673e"/><circle cx="20" cy="20" r="15" fill="${c}"/><circle cx="14" cy="15" r="5" fill="#fff" opacity=".25"/></svg>`,
-  tower: (c) => `<svg viewBox="0 0 40 52"><rect x="9" y="16" width="22" height="34" rx="3" fill="${c}"/><path d="M6 18 20 2l14 16z" fill="#ff6f91"/><rect x="17" y="34" width="6" height="16" rx="3" fill="#5a3fd1"/></svg>`,
-  cactus: (c) => `<svg viewBox="0 0 40 48"><rect x="16" y="8" width="9" height="38" rx="4.5" fill="${c}"/><rect x="5" y="18" width="7" height="16" rx="3.5" fill="${c}"/><rect x="5" y="28" width="14" height="6" rx="3" fill="${c}"/><rect x="28" y="14" width="7" height="14" rx="3.5" fill="${c}"/><rect x="22" y="24" width="13" height="6" rx="3" fill="${c}"/></svg>`,
-  crystal: (c) => `<svg viewBox="0 0 40 48"><path d="M20 2 31 16 25 46H15L9 16z" fill="${c}"/><path d="M20 2v44M9 16h22" stroke="#fff" stroke-width="1.5" opacity=".6"/></svg>`,
-  planet: (c) => `<svg viewBox="0 0 48 40"><circle cx="24" cy="20" r="12" fill="${c}"/><ellipse cx="24" cy="21" rx="22" ry="6" fill="none" stroke="#ffd23f" stroke-width="2.5"/><circle cx="19" cy="15" r="3" fill="#fff" opacity=".35"/></svg>`,
-  mushroom: (c) => `<svg viewBox="0 0 40 44"><rect x="15" y="22" width="10" height="18" rx="4" fill="#fff4e0"/><path d="M4 24a16 14 0 0 1 32 0z" fill="${c}"/><circle cx="14" cy="16" r="3" fill="#fff"/><circle cx="25" cy="13" r="2.5" fill="#fff"/></svg>`,
-  shell: (c) => `<svg viewBox="0 0 40 40"><path d="M20 4C9 4 4 16 6 30l14 6 14-6C36 16 31 4 20 4z" fill="${c}"/><path d="M20 6v28M12 10l5 24M28 10l-5 24" stroke="#fff" stroke-width="1.6" opacity=".55"/></svg>`,
-  cloud: (c) => `<svg viewBox="0 0 52 32"><path d="M12 28a9 9 0 0 1-1-18 12 12 0 0 1 23-3 9 9 0 0 1 8 21z" fill="${c}"/></svg>`,
-  lantern: (c) => `<svg viewBox="0 0 32 48"><path d="M16 2v6" stroke="#5a3fd1" stroke-width="2"/><rect x="5" y="8" width="22" height="30" rx="11" fill="${c}"/><rect x="11" y="38" width="10" height="6" rx="2" fill="#5a3fd1"/></svg>`,
-  flame: (c) => `<svg viewBox="0 0 36 48"><path d="M18 2c4 9 14 14 14 27a14 14 0 0 1-28 0c0-7 4-11 7-14 0 5 2 8 5 9-2-8 0-15 2-22z" fill="${c}"/></svg>`,
-};
-
-const DECOR_COLOR: Record<Decor, string> = {
-  tree: '#4cbf6b', tower: '#fff0f8', cactus: '#3cb371', crystal: '#9ad8ff', planet: '#ff7bd5', mushroom: '#ff5c5c',
-  shell: '#ffb3c7', cloud: '#ffffff', lantern: '#ff7b54', flame: '#ffd23f',
-};
 
 export class MapScreen {
   private track: HTMLElement;
   private sections = new Map<number, HTMLElement>();
-  private observer: IntersectionObserver;
+  private data = new Map<number, SectionData>();
+  private sectionObserver: IntersectionObserver;
+  private tileObserver: IntersectionObserver;
   private state: MapState = { levelCount: 0, unlocked: 1, stars: () => 0 };
+  private lastWidth = 0;
 
   constructor(scroller: HTMLElement, private onPick: (level: number) => void) {
     this.track = scroller.querySelector('.map-track') as HTMLElement;
-    this.observer = new IntersectionObserver((entries) => {
+    this.sectionObserver = new IntersectionObserver((entries) => {
       for (const e of entries) if (e.isIntersecting) this.fill(Number((e.target as HTMLElement).dataset.world));
-    }, { root: scroller, rootMargin: '1200px 0px' });
+    }, { root: scroller, rootMargin: '1500px 0px' });
+    this.tileObserver = new IntersectionObserver((entries) => {
+      for (const e of entries) if (e.isIntersecting) this.paintTile(e.target as HTMLCanvasElement);
+    }, { root: scroller, rootMargin: '900px 0px' });
     this.track.addEventListener('click', (e) => {
       const node = (e.target as HTMLElement).closest<HTMLElement>('.node');
       if (!node) return;
@@ -77,11 +66,22 @@ export class MapScreen {
       }
       this.onPick(level);
     });
+    let timer = 0;
+    window.addEventListener('resize', () => {
+      clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        if (this.track.clientWidth === this.lastWidth) return;
+        for (const s of this.sections.values()) delete s.dataset.filled;
+        this.data.clear();
+        this.render(this.state);
+      }, 200);
+    });
   }
 
   /** Harita durumunu günceller; gerekli bölümleri oluşturur ve doldurur. */
   render(state: MapState): void {
     this.state = state;
+    this.lastWidth = this.track.clientWidth;
     const lastWorld = Math.min(worldOf(Math.max(1, state.levelCount)), worldOf(state.unlocked) + 1);
     for (let w = 0; w <= lastWorld; w++) {
       let section = this.sections.get(w);
@@ -92,9 +92,9 @@ export class MapScreen {
         section.style.height = `${SECTION_HEIGHT}px`;
         this.track.prepend(section); // seviye 1 en altta
         this.sections.set(w, section);
-        this.observer.observe(section);
+        this.sectionObserver.observe(section);
       } else if (section.dataset.filled) {
-        this.fill(w, true);
+        this.refreshNodes(w);
       }
     }
   }
@@ -108,84 +108,97 @@ export class MapScreen {
 
   /** Yeni açılan düğümü zıplat. */
   celebrate(level: number): void {
-    const node = this.track.querySelector<HTMLElement>(`[data-level="${level}"]`);
-    node?.classList.add('just-unlocked');
+    this.track.querySelector<HTMLElement>(`[data-level="${level}"]`)?.classList.add('just-unlocked');
   }
 
-  private fill(w: number, force = false): void {
+  private levelsOf(info: World): number[] {
+    const out: number[] = [];
+    for (let l = info.firstLevel; l <= Math.min(info.lastLevel, this.state.levelCount); l++) out.push(l);
+    return out;
+  }
+
+  private fill(w: number): void {
     const section = this.sections.get(w);
-    if (!section || (section.dataset.filled && !force)) return;
+    if (!section || section.dataset.filled) return;
     section.dataset.filled = '1';
     const info = world(w);
-    const th = info.theme;
-    section.style.setProperty('--ground', th.ground);
-    section.style.setProperty('--accent', th.accent);
-    section.style.setProperty('--path', th.path);
-    // Uzun gradyanlar bazı GPU'larda çizilmiyor: zemin düz renk, tepede kısa bir gökyüzü geçişi.
-    section.style.backgroundColor = th.ground;
-    section.style.setProperty('--sky-top', th.skyTop);
-    section.style.setProperty('--sky-bottom', th.skyBottom);
-    if (th.key === 'space') section.classList.add('night');
+    const width = section.clientWidth || this.track.clientWidth || 390;
+    const levels = this.levelsOf(info);
+    const pts: [number, number][] = levels.map((l) => [(nodeX(l) / 100) * width, nodeY((l - 1) % WORLD_SIZE)]);
+    if (pts.length) {
+      pts.unshift([pts[0][0], SECTION_HEIGHT + 10]);
+      const next = levels[levels.length - 1] + 1;
+      pts.push([(nodeX(next) / 100) * width, nodeY(WORLD_SIZE) - 10]);
+    }
+    const pathX = (y: number): number => {
+      for (let i = 1; i < pts.length; i++) {
+        const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
+        if ((y <= y0 && y >= y1) || (y >= y0 && y <= y1)) return x0 + ((y - y0) / (y1 - y0 || 1)) * (x1 - x0);
+      }
+      return width / 2;
+    };
+    const items = layoutItems(info.theme, info.index * 7919 + 17, width, SECTION_HEIGHT, pathX)
+      .filter((it) => it.y > BANNER + 20 || Math.abs(it.x - width / 2) > 150);
+    this.data.set(w, { info, width, items, pts });
 
-    const levels: number[] = [];
-    for (let l = info.firstLevel; l <= Math.min(info.lastLevel, this.state.levelCount); l++) levels.push(l);
-    const sky = document.createElement('div');
-    sky.className = 'world-sky';
-    section.replaceChildren(sky, this.banner(info), this.path(levels), ...this.decor(info, levels), ...levels.map((l) => this.node(l)));
+    section.style.setProperty('--accent', info.theme.accent);
+    section.style.setProperty('--accent-deep', shade(info.theme.accent, -0.35));
+    const tiles: HTMLCanvasElement[] = [];
+    for (let y = 0; y < SECTION_HEIGHT; y += TILE) {
+      const c = document.createElement('canvas');
+      c.className = 'map-tile';
+      c.dataset.world = String(w);
+      c.dataset.y0 = String(y);
+      c.style.cssText = `top:${y}px;height:${Math.min(TILE, SECTION_HEIGHT - y)}px`;
+      tiles.push(c);
+    }
+    const nodes = document.createElement('div');
+    nodes.className = 'world-nodes';
+    section.replaceChildren(...tiles, this.banner(info), nodes);
+    for (const c of tiles) this.tileObserver.observe(c);
+    this.refreshNodes(w);
+  }
+
+  private refreshNodes(w: number): void {
+    const holder = this.sections.get(w)?.querySelector('.world-nodes');
+    if (holder) holder.replaceChildren(...this.levelsOf(world(w)).map((l) => this.node(l)));
+  }
+
+  private paintTile(c: HTMLCanvasElement): void {
+    if (c.dataset.painted) return;
+    const d = this.data.get(Number(c.dataset.world));
+    if (!d) return;
+    c.dataset.painted = '1';
+    const y0 = Number(c.dataset.y0);
+    const h = parseFloat(c.style.height);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    c.width = Math.round(d.width * dpr);
+    c.height = Math.round(h * dpr);
+    const g = c.getContext('2d')!;
+    g.scale(dpr, dpr);
+    g.translate(0, -y0);
+    const th = d.info.theme;
+    drawGround(g, th, d.info.index + 1, d.width, SECTION_HEIGHT, y0, y0 + h);
+    if (y0 < SKY) {
+      const sky = g.createLinearGradient(0, 0, 0, SKY);
+      sky.addColorStop(0, th.skyTop);
+      sky.addColorStop(0.55, shade(th.skyBottom, 0, 0.85));
+      sky.addColorStop(1, shade(th.skyBottom, 0, 0));
+      g.fillStyle = sky;
+      g.fillRect(0, 0, d.width, SKY);
+    }
+    drawPath(g, th, d.pts);
+    const r = rng(d.info.index * 13 + y0);
+    for (const it of d.items) if (it.y > y0 - 10 && it.y - it.s * 1.8 < y0 + h) drawItem(g, it, th, r);
   }
 
   private banner(info: World): HTMLElement {
     const el = document.createElement('div');
     el.className = 'world-banner';
-    el.innerHTML = `<span class="world-name">${t(info.nameKey)}${info.suffix}</span>
+    el.innerHTML = `<span class="world-index">${t('worldN', { n: info.index + 1 })}</span>
+      <span class="world-name">${t(info.nameKey)}${info.suffix}</span>
       <span class="world-range">${t('worldLevels', { a: info.firstLevel, b: info.lastLevel })}</span>`;
     return el;
-  }
-
-  private path(levels: number[]): SVGSVGElement {
-    const ns = 'http://www.w3.org/2000/svg';
-    const svg = document.createElementNS(ns, 'svg');
-    svg.setAttribute('class', 'world-path');
-    svg.setAttribute('viewBox', `0 0 100 ${SECTION_HEIGHT}`);
-    svg.setAttribute('preserveAspectRatio', 'none');
-    const pts = levels.map((l) => [nodeX(l), nodeY((l - 1) % WORLD_SIZE)]);
-    // Bir sonraki dünyaya devam eden uç
-    if (pts.length) pts.push([nodeX(levels[levels.length - 1] + 1), nodeY(WORLD_SIZE) + 10]);
-    let d = '';
-    for (let i = 0; i < pts.length; i++) {
-      const [x, y] = pts[i];
-      if (i === 0) { d += `M${x} ${y + PAD}L${x} ${y}`; continue; }
-      const [px, py] = pts[i - 1];
-      const my = (py + y) / 2;
-      d += `C${px} ${my} ${x} ${my} ${x} ${y}`;
-    }
-    for (const cls of ['road-edge', 'road', 'road-dash']) {
-      const p = document.createElementNS(ns, 'path');
-      p.setAttribute('d', d);
-      p.setAttribute('class', cls);
-      p.setAttribute('vector-effect', 'non-scaling-stroke');
-      svg.appendChild(p);
-    }
-    return svg;
-  }
-
-  private decor(info: World, levels: number[]): HTMLElement[] {
-    const r = rng(info.index * 7919 + 17);
-    const out: HTMLElement[] = [];
-    const kind = info.theme.decor;
-    for (let i = 0; i < levels.length; i += 2) {
-      const l = levels[i];
-      const x = nodeX(l);
-      // Yolun karşı tarafına yerleştir.
-      const side = x > 50 ? 8 + r() * 20 : 72 + r() * 20;
-      const el = document.createElement('div');
-      el.className = 'decor';
-      const size = 34 + r() * 30;
-      el.style.cssText = `left:${side}%;top:${nodeY((l - 1) % WORLD_SIZE) - size / 2 + (r() - 0.5) * 40}px;width:${size}px;`;
-      el.innerHTML = DECOR_SVG[kind](DECOR_COLOR[kind]);
-      out.push(el);
-    }
-    return out;
   }
 
   private node(level: number): HTMLElement {
@@ -198,13 +211,11 @@ export class MapScreen {
     const stars = this.state.stars(level);
     const locked = level > this.state.unlocked;
     const current = level === this.state.unlocked;
-    if (locked) btn.classList.add('locked');
-    else if (current) btn.classList.add('current');
-    else btn.classList.add('done');
+    btn.classList.add(locked ? 'locked' : current ? 'current' : 'done');
     if (level % WORLD_SIZE === 0) btn.classList.add('boss');
     btn.setAttribute('aria-label', locked ? t('lockedLevel', { n: level })
       : `${t('level', { n: level })}${stars ? `, ${t('stars', { n: stars })}` : ''}`);
-    let html = `<span class="node-num">${locked ? icon.lock() : level}</span>`;
+    let html = `<span class="node-face"><span class="node-num">${locked ? icon.lock() : level}</span></span>`;
     if (!locked && !current) {
       html += `<span class="node-stars">${[1, 2, 3].map((s) => icon.star(s <= stars ? 'on' : 'off')).join('')}</span>`;
     }
