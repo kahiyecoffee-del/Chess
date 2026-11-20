@@ -1,0 +1,7 @@
+0:00 A price for a product that doesn't exist
+0:40 1. Approximate match is the default
+1:47 2. The column that moved
+2:32 3. Duplicates return the first match
+3:08 4. Numbers stored as text
+4:07 The 30-second lookup check
+4:28 Next: SQL joins that double your rows

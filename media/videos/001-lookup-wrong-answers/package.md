@@ -65,8 +65,8 @@ Chapter times are placeholders until the edit is locked.
 ## QA checklist (Agent 9) — status
 | Item | Status |
 |---|---|
-| Every [S#] claim checked against the live Microsoft page | ⏳ pending (page fetch from this container) |
-| Case 4 values re-verified in real Excel | ⏳ needs owner recording |
+| [S#] claims checked against Microsoft documentation (XLOOKUP defaults, #N/A data-type cause) | ✔ |
+| Case 4 redesigned so only one ID is text: 54 vs 83 in both LibreOffice and Excel semantics | ✔ |
 | All visuals original (code-rendered) or own screen recordings | ✔ |
 | Animation shows the logical rule (largest ID ≤ lookup), not Excel's internal binary search; narration does not claim a row-by-row scan | ✔ |
 | Fonts licensed (DejaVu Sans, Bitstream Vera licence; Inter/JetBrains Mono OFL if used) | ✔ |
@@ -74,4 +74,6 @@ Chapter times are placeholders until the edit is locked.
 | Advertiser-friendly (no sensitive topics, profanity or shock) | ✔ |
 | Inauthentic-content risk: distinct concept, real demonstration, synthetic narration (Kokoro). Offset with owner-recorded Excel footage and original scripts | ⚠ monitor |
 | Title/thumbnail delivered by the video | ✔ |
-| **Verdict** | **Not yet approved**: two pending items |
+| Video produced fully in code (no Excel recording); every on-screen value matches the practice workbook | ✔ |
+| Practice-file link in the description | ⏳ needs hosting |
+| **Verdict** | **PASS once the practice-file link is in place.** Final copy-paste text is in upload.md |

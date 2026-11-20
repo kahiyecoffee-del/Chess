@@ -1,0 +1,200 @@
+1
+00:00:00,400 --> 00:00:04,600
+This lookup says product 1004 costs $49.
+
+2
+00:00:04,900 --> 00:00:10,975
+Product 1004 doesn't exist. It was discontinued and deleted from the price list.
+
+3
+00:00:11,275 --> 00:00:15,950
+There's no error and no warning. Just a believable number that's wrong.
+
+4
+00:00:16,250 --> 00:00:21,325
+Lookups fail like this all the time, and the dangerous failures are the quiet ones.
+
+5
+00:00:21,625 --> 00:00:25,800
+Here are four of them, why each one happens, and the one-line fix.
+
+6
+00:00:26,100 --> 00:00:34,425
+By the end, you'll know exactly when VLOOKUP lies, when XLOOKUP still can, and a 30-second check you can run on any report.
+
+7
+00:00:34,725 --> 00:00:40,025
+The practice file is linked in the description, so you can break these formulas yourself.
+
+8
+00:00:40,725 --> 00:00:46,350
+Look at the formula. It has three arguments. The fourth one, range_lookup, is missing.
+
+9
+00:00:46,650 --> 00:00:52,025
+When you leave it out, VLOOKUP doesn't do an exact match. It does an approximate match.
+
+10
+00:00:52,325 --> 00:01:00,775
+Approximate match assumes the first column is sorted, and returns the largest value that is less than or equal to what you asked for.
+
+11
+00:01:01,075 --> 00:01:07,175
+We asked for 1004. The largest ID that isn't bigger than 1004 is 1003.
+
+12
+00:01:07,475 --> 00:01:09,950
+So you get the laptop stand's price.
+
+13
+00:01:10,250 --> 00:01:17,200
+Ask for 1012, an ID past the end of the list, and you get the last row's price. Still no error.
+
+14
+00:01:17,500 --> 00:01:21,975
+And if the column isn't sorted at all, the result is unreliable.
+
+15
+00:01:22,275 --> 00:01:26,600
+The fix is one word: FALSE. Add it as the fourth argument.
+
+16
+00:01:26,900 --> 00:01:32,025
+Now a missing product gives you #N/A, which is exactly what you want.
+
+17
+00:01:32,325 --> 00:01:35,950
+An error is a warning. A wrong number is a trap.
+
+18
+00:01:36,250 --> 00:01:41,725
+XLOOKUP flips the default. It does an exact match unless you ask for something else.
+
+19
+00:01:42,025 --> 00:01:46,450
+If your version of Excel has it, that alone is a good reason to switch.
+
+20
+00:01:47,150 --> 00:01:50,925
+This formula was written when column 3 was the price.
+
+21
+00:01:51,225 --> 00:01:54,500
+Then someone inserted a category column.
+
+22
+00:01:54,800 --> 00:02:01,100
+VLOOKUP's column number is just a typed number. Excel doesn't change it when the table changes.
+
+23
+00:02:01,400 --> 00:02:06,250
+So column 3 is now the product name, and our price column shows text.
+
+24
+00:02:06,550 --> 00:02:12,875
+If the new column had been numbers, you'd get a different number instead, and that's when nobody notices.
+
+25
+00:02:13,175 --> 00:02:19,225
+XLOOKUP doesn't count columns. You point at the lookup column and the return column directly.
+
+26
+00:02:19,525 --> 00:02:24,100
+Because those are real references, inserting columns doesn't break it.
+
+27
+00:02:24,400 --> 00:02:31,999
+If you're stuck with VLOOKUP, replace the typed number with a MATCH on the header row. That version is in the practice file too.
+
+28
+00:02:32,700 --> 00:02:36,550
+Which plan is ACME on today? The formula says Basic.
+
+29
+00:02:36,850 --> 00:02:39,150
+But ACME appears three times.
+
+30
+00:02:39,450 --> 00:02:44,675
+Both VLOOKUP and XLOOKUP return the first match they find, searching from the top.
+
+31
+00:02:44,975 --> 00:02:49,525
+Our rows are in date order, so the first match is the oldest record.
+
+32
+00:02:49,825 --> 00:02:57,525
+XLOOKUP has a search_mode argument. -1 searches from the last row upward, so you get the most recent record.
+
+33
+00:02:57,825 --> 00:03:07,425
+This only works if the data is sorted by date. If it isn't, sort it first, or pick the row with the latest date. That's coming in a separate video.
+
+34
+00:03:08,125 --> 00:03:15,450
+The last one is the sneakiest. These IDs came from a CSV export, and the total says $54.
+
+35
+00:03:15,750 --> 00:03:18,950
+Looks fine. But the middle row returned zero.
+
+36
+00:03:19,250 --> 00:03:27,425
+Look at the ID. It's aligned to the left. Excel aligns numbers to the right and text to the left, so this ID is text.
+
+37
+00:03:27,725 --> 00:03:29,825
+And it has a trailing space.
+
+38
+00:03:30,125 --> 00:03:37,800
+To Excel, the number 1004 and the text "1004 " are different values, so the exact match fails.
+
+39
+00:03:38,100 --> 00:03:43,900
+Normally that gives you #N/A. But this formula is wrapped in IFERROR with a zero.
+
+40
+00:03:44,200 --> 00:03:48,700
+So the error became a zero, and the zero disappeared into the total.
+
+41
+00:03:49,000 --> 00:03:55,050
+The fix: TRIM removes the extra space, and the double minus turns the text into a number.
+
+42
+00:03:55,350 --> 00:03:57,925
+Now the total is $83.
+
+43
+00:03:58,225 --> 00:04:07,150
+And the lesson: don't use IFERROR to turn errors into zeros in anything that gets added up. Show a clear message like "not found" instead.
+
+44
+00:04:07,850 --> 00:04:11,100
+Before you trust any lookup column, run this check.
+
+45
+00:04:11,400 --> 00:04:14,275
+1. Does every VLOOKUP end in FALSE?
+
+46
+00:04:14,575 --> 00:04:17,550
+2. Is the column number typed by hand?
+
+47
+00:04:17,850 --> 00:04:22,925
+3. Can the key appear more than once? COUNTIF on the key column will tell you.
+
+48
+00:04:23,225 --> 00:04:27,525
+4. Are the keys numbers on both sides? ISTEXT will tell you.
+
+49
+00:04:28,225 --> 00:04:34,000
+Every broken formula and every fix is in the practice file, so you can try it yourself.
+
+50
+00:04:34,300 --> 00:04:44,600
+And if your formulas are fine but your SQL joins return more rows than you started with, that's the same duplicate problem in a different tool. That's the next video.
+

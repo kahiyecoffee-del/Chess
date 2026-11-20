@@ -95,8 +95,9 @@ def main(out_dir: Path) -> Path:
     ws = wb.create_sheet("4 Text vs number")
     price_table(ws)
     ws["E1"], ws["F1"], ws["G1"] = "Look up ID (pasted from CSV)", "IFERROR(...,0)", "Fixed: convert with --"
-    for r, pid in enumerate(["1007", "1004 ", "1006"], start=2):
-        ws[f"E{r}"] = pid  # stored as text (one with a trailing space)
+    # Only the middle ID came in as text with a trailing space; the others are real numbers.
+    for r, pid in enumerate([1007, "1004 ", 1006], start=2):
+        ws[f"E{r}"] = pid
         ws[f"F{r}"] = f"=IFERROR(VLOOKUP(E{r},$A$2:$C$11,3,FALSE),0)"
         ws[f"F{r}"].fill = WRONG
         ws[f"G{r}"] = f"=VLOOKUP(--TRIM(E{r}),$A$2:$C$11,3,FALSE)"
