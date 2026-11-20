@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas Ceramics — Handmade tableware</title>
+<meta name="description" content="Small-batch stoneware plates, bowls and mugs, made by hand in a two-person studio. Sample site built by Rowwise Data.">
+<style>
+:root{--clay:#B4532A;--sand:#F4EDE4;--ink:#2A211C;--muted:#7A6A5F;--line:#E3D7C9}
+*{margin:0;box-sizing:border-box}
+body{font-family:Inter,system-ui,sans-serif;background:var(--sand);color:var(--ink);line-height:1.5}
+a{color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+nav{display:flex;justify-content:space-between;align-items:center;padding:22px 0}
+.logo{font-weight:800;font-size:22px;letter-spacing:-.5px}.logo span{color:var(--clay)}
+nav ul{display:flex;gap:28px;list-style:none;font-weight:500}
+.btn{display:inline-block;background:var(--clay);color:#fff;text-decoration:none;padding:14px 26px;border-radius:999px;font-weight:700}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--ink)}
+.hero{display:grid;grid-template-columns:1.1fr 1fr;gap:48px;align-items:center;padding:56px 0 80px}
+h1{font-size:64px;line-height:1.02;letter-spacing:-2px;font-weight:800}
+.hero p{font-size:20px;color:var(--muted);margin:22px 0 32px;max-width:480px}
+.art{aspect-ratio:1;border-radius:32px;background:radial-gradient(circle at 30% 30%,#E9C9A8 0 18%,transparent 19%),radial-gradient(circle at 68% 62%,#C9744A 0 26%,transparent 27%),radial-gradient(circle at 70% 60%,#9E4422 0 30%,transparent 31%),linear-gradient(135deg,#EAD9C6,#D9BFA4)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;padding-bottom:80px}
+.card{background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.card .img{height:200px}
+.card div.t{padding:18px 20px}.card b{display:block;font-size:18px}.card i{font-style:normal;color:var(--muted)}
+h2{font-size:36px;letter-spacing:-1px;margin-bottom:24px}
+.band{background:var(--ink);color:var(--sand);padding:64px 0;text-align:center}
+.band p{color:#CDBFB2;margin:12px auto 28px;max-width:560px}
+footer{padding:28px 0;color:var(--muted);font-size:14px}
+@media (max-width:760px){
+  nav ul{display:none}.hero{grid-template-columns:1fr;padding:24px 0 48px}h1{font-size:44px}
+  .grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav><div class="logo">Atlas<span>.</span>Ceramics</div><ul><li>Shop</li><li>Studio</li><li>Workshops</li><li>Contact</li></ul></nav>
+  <section class="hero">
+    <div>
+      <h1>Tableware made slowly, for every day.</h1>
+      <p>Small-batch stoneware plates, bowls and mugs, thrown by hand in our two-person studio. Dishwasher-safe and built to last.</p>
+      <a class="btn" href="#shop">Shop the collection</a>&nbsp;&nbsp;<a class="btn ghost" href="#workshops">Book a workshop</a>
+    </div>
+    <div class="art" role="img" aria-label="Illustration of stoneware bowls"></div>
+  </section>
+  <h2 id="shop">Bestsellers</h2>
+  <section class="grid">
+    <div class="card"><div class="img" style="background:linear-gradient(135deg,#D9BFA4,#B4532A)"></div><div class="t"><b>Ember bowl</b><i>$38 · set of 2</i></div></div>
+    <div class="card"><div class="img" style="background:linear-gradient(135deg,#EAD9C6,#7A6A5F)"></div><div class="t"><b>Dune dinner plate</b><i>$32</i></div></div>
+    <div class="card"><div class="img" style="background:linear-gradient(135deg,#F4EDE4,#C9744A)"></div><div class="t"><b>Morning mug</b><i>$26</i></div></div>
+  </section>
+</div>
+<section class="band" id="workshops">
+  <div class="wrap"><h2>Learn the wheel in one afternoon</h2>
+  <p>Three-hour beginner workshops every Saturday. Clay, glazing and firing included. You take home two pieces.</p>
+  <a class="btn" href="#">See dates</a></div>
+</section>
+<div class="wrap"><footer>© 2026 Atlas Ceramics (fictional brand) · Sample website by Rowwise Data</footer></div>
+</body>
+</html>
