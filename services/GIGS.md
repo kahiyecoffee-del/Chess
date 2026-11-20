@@ -1,6 +1,8 @@
 # Rowwise Data — Fiverr profile + 7 listings (copy-paste)
 
-Images: `portfolio/gigN-*.png` (1280×769). Prices are launch prices; raise them ~40% after 10 five-star reviews.
+Images: `portfolio/gigN-*.png` (1280×769). Prices are launch prices, set against live Fiverr competitors (Nov 2026, see COMPETITORS.md); raise them ~40% after 10 five-star reviews.
+
+**Every description starts with:** `Message me before ordering: free scope check and a fixed price.` (top sellers in every one of our categories do this).
 
 ---
 
@@ -48,12 +50,13 @@ EVERY DELIVERY INCLUDES
 
 Send me your file (sample or dummy data is fine) and the result you need. I'll reply with a clear, fixed quote.
 ```
+
 | | Basic | Standard | Premium |
 |---|---|---|---|
 | Name | Quick fix | Clean + automate | Full workflow |
 | Includes | 1 sheet ≤1,000 rows or up to 5 formulas | Up to 10,000 rows + 1 automation | Multi-file workflow + automation + checks + guide |
 | Delivery / Revisions | 2 days / 1 | 3 days / 2 | 5 days / 3 |
-| Price | $25 | $60 | $150 |
+| Price | $20 | $50 | $120 |
 
 ---
 
@@ -84,7 +87,7 @@ Sample in my portfolio: a messy 438-row export cleaned to 420 rows, with a dashb
 |---|---|---|---|
 | Includes | 4 KPIs + 2 charts (clean data) | Cleaning + 6 KPIs + 4 charts + filters | Automated refresh + multi-sheet dashboard + guide |
 | Delivery / Revisions | 3 days / 1 | 4 days / 2 | 6 days / 3 |
-| Price | $40 | $90 | $200 |
+| Price | $30 | $75 | $180 |
 
 ---
 
@@ -143,9 +146,9 @@ Scanned or handwritten files: send a sample first so I can confirm readability.
 ```
 | | Basic | Standard | Premium |
 |---|---|---|---|
-| Includes | Up to 5 pages | Up to 25 pages | Up to 100 pages + checks |
+| Includes | Up to 20 pages | Up to 75 pages | Up to 200 pages + checks + cleanup |
 | Delivery / Revisions | 1 day / 1 | 2 days / 2 | 4 days / 2 |
-| Price | $10 | $30 | $90 |
+| Price | $10 | $30 | $70 |
 
 ---
 
@@ -233,9 +236,9 @@ Send your draft, outline or notes. I'll turn them into a deck you're proud to pr
 ```
 | | Basic | Standard | Premium |
 |---|---|---|---|
-| Includes | Up to 5 slides | Up to 12 slides + charts | Up to 20 slides + charts + speaker notes |
+| Includes | Up to 8 slides | Up to 15 slides + charts | Up to 25 slides + charts + speaker notes |
 | Delivery / Revisions | 2 days / 1 | 3 days / 2 | 5 days / 3 |
-| Price | $30 | $75 | $150 |
+| Price | $25 | $60 | $120 |
 
 ---
 
