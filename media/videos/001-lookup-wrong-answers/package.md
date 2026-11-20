@@ -72,6 +72,6 @@ Chapter times are placeholders until the edit is locked.
 | Fonts licensed (DejaVu Sans, Bitstream Vera licence; Inter/JetBrains Mono OFL if used) | ✔ |
 | Music: none, or YouTube Audio Library with track recorded in LICENSES | ✔ none planned |
 | Advertiser-friendly (no sensitive topics, profanity or shock) | ✔ |
-| Inauthentic-content risk: distinct concept, real demonstration, human narration | ✔ if own-voice narration |
+| Inauthentic-content risk: distinct concept, real demonstration, synthetic narration (Kokoro). Offset with owner-recorded Excel footage and original scripts | ⚠ monitor |
 | Title/thumbnail delivered by the video | ✔ |
 | **Verdict** | **Not yet approved**: two pending items |
