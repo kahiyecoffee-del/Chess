@@ -1,5 +1,7 @@
 # Open tasks
 
+> **STATUS 2026-11-20: YouTube production PAUSED by owner.** Focus moved to freelance services (see /services). LF1 is published; LF2+ not started.
+
 ## Blocked on owner (🔒)
 - [x] Approve the niche/brand (Rowwise)
 - [x] Create channel, claim handle → @rowwisehq
