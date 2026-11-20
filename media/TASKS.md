@@ -1,8 +1,9 @@
 # Open tasks
 
 ## Blocked on owner (🔒)
-- [ ] Approve the niche/brand (Rowwise) or redirect
-- [ ] Create Google/YouTube Brand Account, claim handle (@rowwise or backup), upload media/brand/logo.png + banner.png
+- [x] Approve the niche/brand (Rowwise)
+- [x] Create channel, claim handle → @rowwisehq
+- [ ] Upload media/brand/logo.png + banner.png and the channel description
 - [ ] Choose narration route: own voice (recommended) / paid TTS / allow huggingface.co for local TTS
 - [ ] Record Excel UI shots for LF1 from media/videos/001-lookup-wrong-answers/shotlist.md (Microsoft 365)
 - [ ] Publication permission policy: approve each video, or blanket approval after QA PASS

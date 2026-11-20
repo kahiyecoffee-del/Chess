@@ -151,7 +151,7 @@ but RPM caps it. Good as a later sister channel that cross-promotes the game, no
 ## F. Channel launch strategy
 
 **Brand** (assets in [`brand/`](brand/)):
-* Name: **Rowwise** (backups: *Gridwise*, *Cell Logic*). 🔒 You check handle availability when creating the account.
+* Name: **Rowwise** · Handle: **@rowwisehq** (claimed by owner 2026-11-20).
 * Tagline: *Get the right answer from your data.*
 * Palette: Ink `#13212E`, Paper `#F6F4EE`, Correct green `#1FA971`, Wrong coral `#E5533D`, Highlight amber `#F2B33D`.
 * Type: Inter (UI/titles) + JetBrains Mono (formulas), both under the SIL Open Font License.
