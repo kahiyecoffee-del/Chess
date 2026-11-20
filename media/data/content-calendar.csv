@@ -1,0 +1,25 @@
+date,day,slot,type,pillar,id,working_title,status,human_dependency
+2026-11-23,Mon,sprint,production,-,LF1,Script+animations+practice file for LF1,in_progress,none
+2026-11-24,Tue,sprint,production,-,LF2,LF2 fully code-produced (SQL demo + animations),planned,narration
+2026-11-25,Wed,sprint,setup,-,-,Channel creation + logo/banner upload + handle,blocked,owner account creation
+2026-11-26,Thu,sprint,production,-,LF3,LF3 script + Excel shot list,planned,Excel recording
+2026-11-27,Fri,sprint,production,-,LF4,LF4 test protocol for AI assistants,planned,AI tool accounts
+2026-11-28,Sat,sprint,recording,-,LF1-LF3,Owner records narration + Excel UI (est. 3-4 h total),planned,owner
+2026-11-29,Sun,sprint,QA,-,LF1-LF2,Final assembly + QA gate,planned,none
+2026-12-01,Tue,14:00 UTC,long-form,Fix It,LF1,VLOOKUP vs XLOOKUP: 4 ways your lookup silently returns the wrong answer,planned,publish approval
+2026-12-02,Wed,14:00 UTC,short,Under the Hood,S1,VLOOKUP's default is approximate match,planned,publish approval
+2026-12-04,Fri,14:00 UTC,long-form,Under the Hood,LF2,SQL JOINs drawn as spreadsheets: why your row count explodes,planned,publish approval
+2026-12-05,Sat,14:00 UTC,short,Under the Hood,S2,One duplicate key = doubled revenue,planned,publish approval
+2026-12-07,Mon,14:00 UTC,short,Fix It,S3,XLOOKUP can search from the bottom,planned,publish approval
+2026-12-08,Tue,14:00 UTC,long-form,Fix It,LF3,"Remove duplicates but keep the latest record (Excel, SQL, Python)",planned,publish approval
+2026-12-09,Wed,14:00 UTC,short,Fix It,S4,Keep latest record in one formula,planned,publish approval
+2026-12-11,Fri,14:00 UTC,long-form,AI vs Formula,LF4,"I gave Copilot, ChatGPT and Gemini the same messy spreadsheet",planned,AI tool accounts
+2026-12-12,Sat,14:00 UTC,short,AI vs Formula,S5,The AI answer that looked right,planned,publish approval
+2026-12-14,Mon,14:00 UTC,short,Under the Hood,S6,Why =SUM ignores your numbers,planned,publish approval
+2026-12-15,Tue,14:00 UTC,long-form,Fix It,LF5,Numbers stored as text: the silent bug behind failed lookups and wrong SUMs,planned,publish approval
+2026-12-16,Wed,14:00 UTC,short,Fix It,S7,Spot numbers-as-text in 3 seconds,planned,publish approval
+2026-12-18,Fri,14:00 UTC,long-form,Real Data Projects,LF6,What 10 years of US flight-delay data shows (Excel -> SQL -> Python),planned,publish approval
+2026-12-19,Sat,14:00 UTC,short,Real Data Projects,S8,The worst hour to fly (from public BTS data),planned,publish approval
+2026-12-21,Mon,14:00 UTC,short,Under the Hood,S9,What #SPILL! actually means,planned,publish approval
+2026-12-22,Tue,14:00 UTC,long-form,Fix It,LF7,"Dynamic arrays in 12 minutes: FILTER, SORT, UNIQUE and the #SPILL! fix",planned,publish approval
+2026-12-22,Tue,review,report,-,-,30-day review: CTR/AVD/retention/subs per 1k views; re-plan,planned,Studio export

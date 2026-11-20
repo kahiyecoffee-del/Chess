@@ -1,0 +1,33 @@
+id,pillar,working_title,target_query,angle,tool,autonomy,status
+1,Fix It,VLOOKUP vs XLOOKUP: 4 ways your lookup silently returns the wrong answer,xlookup vs vlookup,Failure cases not syntax,Excel,partial,scripting
+2,Under the Hood,SQL JOINs drawn as spreadsheets: why your row count explodes,sql join duplicates rows,Fan-out visualised row by row,SQL,full,idea
+3,Fix It,Remove duplicates but keep the latest record,remove duplicates keep latest excel,Same task in 3 tools,Excel/SQL/Python,partial,idea
+4,AI vs Formula,Copilot vs ChatGPT vs Gemini on one messy spreadsheet,copilot excel accuracy,Scored test with known answers,AI,partial,idea
+5,Fix It,Numbers stored as text: the silent bug,excel numbers stored as text,Why SUM/lookup fail,Excel,partial,idea
+6,Real Data Projects,10 years of US flight delays,flight delay data analysis,Public-domain BTS data end to end,Excel/SQL/Python,partial,idea
+7,Fix It,Dynamic arrays and the #SPILL! fix,excel spill error,Every SPILL cause,Excel,partial,idea
+8,Under the Hood,Why your pivot table total is wrong,pivot table wrong total,Average of averages / distinct count,Excel,partial,idea
+9,Fix It,SUMIFS with multiple criteria incl. OR logic,sumifs or criteria,OR is the trap,Excel,partial,idea
+10,Under the Hood,LEFT JOIN that behaves like an INNER JOIN,left join where clause,Filter placement,SQL,full,idea
+11,Fix It,COUNT vs COUNT(*) vs COUNT DISTINCT and NULLs,sql count null,NULL semantics visualised,SQL,full,idea
+12,Fix It,Dates that aren't dates (text dates & regional formats),excel date not recognized,US vs EU date flip,Excel,partial,idea
+13,AI vs Formula,Can AI write correct SQL for a real schema?,chatgpt sql accuracy,Graded on known answers,AI/SQL,partial,idea
+14,Real Data Projects,What public payroll data says about pay gaps (method first),salary data analysis,Method & pitfalls,Excel/Python,partial,idea
+15,Under the Hood,Floating point: why 0.1+0.2 isn't 0.3 in your sheet,excel rounding error,Binary fractions visualised,Excel/Python,full,idea
+16,Fix It,Power Query: combine 50 files in one click,power query combine files,Folder pattern,Excel,partial,idea
+17,Fix It,pandas merge doubled my rows,pandas merge duplicates,validate= argument,Python,full,idea
+18,Fix It,GROUP BY errors explained,sql group by error,Why every column must be grouped,SQL,full,idea
+19,Under the Hood,Window functions as moving spreadsheet frames,sql window functions explained,Frame animation,SQL,full,idea
+20,Fix It,Running totals the right way (Excel/SQL/pandas),running total excel,3-tool comparison,Excel/SQL/Python,partial,idea
+21,AI vs Formula,Agent Mode in Excel: does it do what it says?,excel agent mode,Audit its changes,AI/Excel,partial,idea
+22,Fix It,INDEX/MATCH two-way lookup,index match two criteria,Array logic explained,Excel,partial,idea
+23,Under the Hood,Why VLOOKUP breaks when you insert a column,vlookup column insert,col_index hardcoding,Excel,partial,idea
+24,Fix It,Excel to SQL: your first 5 queries for spreadsheet people,sql for excel users,Map formulas to SQL,SQL,full,idea
+25,Real Data Projects,Weather records: is your city getting hotter?,noaa data analysis,Public-domain NOAA data,Python,full,idea
+26,Fix It,Conditional formatting rules that actually scale,conditional formatting formula,Relative refs trap,Excel,partial,idea
+27,Under the Hood,Percent change vs percentage points,percentage points vs percent,Common reporting error,Excel,full,idea
+28,Fix It,Clean messy names and spaces (TRIM/CLEAN/TEXTSPLIT),excel remove extra spaces,Non-breaking space CHAR(160),Excel,partial,idea
+29,AI vs Formula,AI chart suggestions that mislead,ai charts excel,Truncated axes etc.,AI,partial,idea
+30,Fix It,LAMBDA: build your own Excel function,excel lambda,Reusable cleaning function,Excel,partial,idea
+31,Under the Hood,Simpson's paradox in a sales report,simpsons paradox example,Segment flip visualised,Excel/Python,full,idea
+32,Fix It,Google Sheets QUERY function for SQL people,google sheets query function,SQL bridge,Sheets,partial,idea

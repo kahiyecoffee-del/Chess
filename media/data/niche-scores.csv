@@ -1,0 +1,18 @@
+niche,language_market,rpm_0_10,demand_0_10,opportunity_0_10,sustainability_0_10,scalability_0_10,diversification_0_10,weighted_score,risk_multiplier,risk_adjusted,main_risk
+Data skills for professionals (Excel/Sheets + SQL + Python + AI),EN (US/UK/CA/AU),8,8,6,9,7,9,7.80,1.00,7.80,Big incumbents on head terms; must win the long tail
+Software & AI-tool tutorials (SaaS),EN,8,9,5,6,7,9,7.40,0.95,7.03,Tools change fast; tutorials go stale; AI-news slop competition
+Programming tutorials (Python/SQL/JS),EN,7,8,4,8,9,8,7.30,0.95,6.93,freeCodeCamp-scale incumbents; measured tech RPM lower than estimate tables
+Science & engineering explainers (code animation),EN,8,7,4,9,7,5,6.90,0.95,6.55,Browse-driven so slow start; very high production bar
+Excel tutorials only,DE (Germany/Austria/Switzerland),7,6,8,9,4,7,6.80,0.95,6.46,Smaller market; needs fluent German narration
+Personal finance & investing,EN-US,10,9,2,8,5,10,7.55,0.85,6.42,Most saturated niche; YMYL accuracy and credibility bar; scam-adjacent ad climate
+Chess (engine-driven puzzles & analysis),EN,4,7,4,8,10,7,6.40,1.00,6.40,Low RPM; personality-led incumbents; puzzle Shorts saturated
+English learning for Turkish/Spanish speakers,TR/ES,3,8,4,9,7,8,6.15,1.00,6.15,Audience sits in low-CPM countries
+Real estate & home buying,EN-US,9,6,5,7,5,8,6.80,0.85,5.78,Local/regulatory detail; rate-cycle dependent demand
+Legal & consumer-rights explainers,EN-US,8,5,7,8,6,6,6.75,0.80,5.40,Liability and accuracy risk; slow subscriber growth
+AI news & tool roundups,EN,7,9,2,4,8,7,6.35,0.85,5.40,Saturated with AI slop; inauthentic-content enforcement
+Tech product reviews,EN,6,9,2,5,2,9,5.55,0.95,5.27,Needs physical products and on-camera presence
+History documentaries,EN,4,8,3,9,5,4,5.55,0.95,5.27,Heavy research per video; crowded with big studios
+Health & longevity for seniors,EN-US,7,8,5,8,4,7,6.60,0.70,4.62,Medical misinformation policy; sensitive-topic AI rules
+Gaming (guides & let's plays),EN,2,10,1,5,4,5,4.50,1.00,4.50,Lowest RPM tier; hyper-competitive
+True crime & mystery storytelling,EN,4,8,2,6,5,4,4.95,0.80,3.96,Advertiser-unfriendly topics; ethics of real victims
+Kids animation,EN,1,9,2,6,4,3,4.15,0.60,2.49,Made-for-kids limits on ads/comments; low RPM; strict policy
