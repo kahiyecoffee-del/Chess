@@ -1,0 +1,87 @@
+<title>Fısıltı</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: a black stage; video centred; choices rise from the bottom at the end of each part. Single dark theme by design. */
+:root{--bg:#000;--ink:#E9E3DA;--muted:#8E877E;--line:#2B2628;--blood:#A3221B;--ember:#D9873F;
+--f-display:"Cormorant Garamond",Georgia,serif;--f-body:Inter,system-ui,sans-serif;color-scheme:dark}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);margin:0;
+padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0}
+.stage{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding-block:24px}
+video{width:100%;max-width:960px;aspect-ratio:16/9;background:#000;display:block}
+.card{max-width:560px;text-align:center;display:flex;flex-direction:column;gap:16px;align-items:center}
+h1{font-family:var(--f-display);font-weight:700;font-size:64px;letter-spacing:.12em;margin:0;line-height:1}
+h2{font-family:var(--f-display);font-weight:700;font-size:34px;margin:0;text-wrap:balance}
+p{margin:0;color:var(--muted);line-height:1.6}
+.btn{font:600 16px var(--f-body);color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:12px;padding:15px 22px;cursor:pointer;min-height:52px;width:100%;max-width:440px;text-align:left}
+.btn:hover{border-color:var(--ember)}
+.btn.primary{background:var(--blood);border-color:var(--blood);text-align:center}
+.btn b{display:block;font-family:var(--f-display);font-size:22px;margin-bottom:2px}
+.btn span{color:var(--muted);font-weight:400;font-size:14px}
+.choices{display:flex;flex-direction:column;gap:12px;width:100%;align-items:center;animation:rise 1.2s ease both}
+.timer{height:2px;width:100%;max-width:440px;background:var(--line)}.timer i{display:block;height:100%;background:var(--blood);width:100%}
+.small{font-size:13px}
+.link{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;font:13px var(--f-body)}
+button:focus-visible{outline:2px solid var(--ember);outline-offset:3px}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.choices{animation:none}}
+</style>
+<div class="stage" id="stage"></div>
+<script>
+// Story graph. "video" nodes play, then show choices; "end" nodes are bad endings; "soon" = not produced yet.
+const G = {
+  b1:  {video:"b1.mp4", title:"1. Bölüm · 03.00", choices:[
+          {to:"b2",  t:"Gözlerini kapat ve say", s:"“Yediye kadar say, Zehra. Yediye varınca gidecek.”"},
+          {to:"s1b", t:"Bağırmaya çalış", s:"“Elif'i, birini, herkesi uyandır.”"}]},
+  s1b: {video:"s1b.mp4", title:"Son · Sesin", end:true, back:"b1"},
+  b2:  {soon:true, title:"2. Bölüm · Kayıt"}
+};
+const KEY = "fisilti-progress-v1";
+let st = {node:null, seen:[]};
+try { st = JSON.parse(localStorage.getItem(KEY)) || st; } catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
+const stage = document.getElementById("stage");
+const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function intro() {
+  stage.innerHTML = `<div class="card"><h1>FISILTI</h1>
+    <p>Kulaklık tak. Işıkları kapat.<br>Her bölümün sonunda bir seçim yapacaksın. Fısıltıya her zaman güvenme.</p>
+    <button class="btn primary" id="go">${st.node ? "Kaldığın yerden devam et" : "Başla"}</button>
+    ${st.node ? `<button class="link" id="restart">Baştan başla</button>` : ""}</div>`;
+  document.getElementById("go").onclick = () => play(st.node || "b1");
+  const r = document.getElementById("restart"); if (r) r.onclick = () => { st = {node:null, seen:[]}; save(); play("b1"); };
+}
+
+function play(id) {
+  const n = G[id]; st.node = id; if (!st.seen.includes(id)) st.seen.push(id); save();
+  if (n.soon) {
+    stage.innerHTML = `<div class="card"><p class="small">${esc(n.title)}</p><h2>Yakında…</h2>
+      <p>Bu yol henüz kayda alınmadı. Fısıltı seni bekliyor.</p><button class="btn primary" id="home">Başa dön</button></div>`;
+    document.getElementById("home").onclick = () => { st.node = null; save(); intro(); };
+    return;
+  }
+  stage.innerHTML = `<video id="v" src="${n.video}" playsinline controls></video><p class="small">${esc(n.title)}</p><div id="after"></div>`;
+  const v = document.getElementById("v");
+  v.play().catch(() => {});
+  v.onended = () => after(id);
+}
+
+function after(id) {
+  const n = G[id], box = document.getElementById("after");
+  if (n.end) {
+    box.innerHTML = `<div class="choices"><h2>— SON —</h2>
+      <button class="btn" id="back"><b>Son seçimine dön</b><span>Belki bu sefer fısıltıyı dinlemezsin.</span></button>
+      <button class="link" id="restart">Baştan başla</button></div>`;
+    document.getElementById("back").onclick = () => play(n.back);
+    document.getElementById("restart").onclick = () => { st = {node:null, seen:[]}; save(); play("b1"); };
+    return;
+  }
+  box.innerHTML = `<div class="choices">` + n.choices.map((c, i) =>
+    `<button class="btn" data-to="${c.to}"><b>${esc(c.t)}</b><span>${esc(c.s)}</span></button>`).join("") + `</div>`;
+  box.querySelectorAll("[data-to]").forEach(b => b.onclick = () => play(b.dataset.to));
+  box.scrollIntoView({behavior:"smooth", block:"end"});
+}
+intro();
+</script>
