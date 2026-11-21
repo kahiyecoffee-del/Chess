@@ -6,3 +6,4 @@ content/puzzles/raw/
 test-results/
 media/videos/*/build/
 fun/korku/build/
+__pycache__/
