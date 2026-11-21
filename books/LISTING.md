@@ -1,6 +1,6 @@
 # Book 1 — KDP listing (copy-paste)
 
-**Files:** `out/mate-in-2-interior.pdf` (64 pages, 6×9 in, black & white, no bleed) · `out/mate-in-2-cover-front.png` (front only; KDP's Cover Creator can use it, or we make a full wrap once the page count is final).
+**Files:** `out/mate-in-2-interior.pdf` (64 pages, 6×9 in, black & white, no bleed) · `out/mate-in-2-cover-full.pdf` (full wrap 12.394 × 9.25 in, spine 0.144 in, barcode area left clear).
 
 **Title:** 300 Mate-in-2 Chess Puzzles
 **Subtitle:** Verified Checkmate Tactics for Improving Players, from Easy to Hard, with Full Solutions
