@@ -179,6 +179,49 @@ if SHOT in ("tavan", "oda", "yorgan", "ayakucu"):
     own = zehra_bed()
     breathing_body((1.6, 0.15, 0.68))
 
+if SHOT == "sabah":
+    # same room, grey morning: Elif's bed flat and tidy, cold daylight through the curtain gap
+    room()
+    for o in list(scn.objects):
+        if o.type == "LIGHT" and o.data.type in ("SPOT", "POINT"):
+            o.data.energy *= 0.0
+    own = zehra_bed()
+    box("folded_quilt", (1.6, -0.55, 0.65), (0.8, 0.5, 0.08), QUILT, 0.03)
+    for n in ("curtain_l", "curtain_r"):
+        scn.objects[n].location.x *= 2.2
+    day = bpy.data.lights.new("day", "AREA"); day.shape = "RECTANGLE"; day.size = 1.2; day.size_y = 2.0
+    day.energy = 70; day.color = (0.75, 0.82, 0.95)
+    do = bpy.data.objects.new("day", day); scn.collection.objects.link(do)
+    do.location = (0, 1.6, 1.6); do.rotation_euler = (math.radians(-90), 0, 0)
+    world.node_tree.nodes["Background"].inputs[0].default_value = (0.05, 0.06, 0.08, 1)
+    cam = camera((-1.55, -0.65, 0.95), (1.5, 0.2, 0.6), lens=22)
+    handheld(cam, 0.003, 0.002)
+
+if SHOT == "kampus":
+    # dusk campus path, lamp posts receding, a figure under the farthest lamp
+    world.node_tree.nodes["Background"].inputs[0].default_value = (0.004, 0.006, 0.014, 1)
+    GRASS = mat("grass", (0.03, 0.05, 0.03), 0.9)
+    PATH = mat("path", (0.18, 0.17, 0.16), 0.8)
+    POLE = mat("pole", (0.05, 0.05, 0.05), 0.5)
+    BULB = mat("bulb", (0, 0, 0), 1.0, emit=(1.0, 0.55, 0.2), strength=30.0)
+    TREE = mat("tree", (0.01, 0.015, 0.01), 0.9)
+    box("ground", (0, 25, -0.05), (60, 80, 0.1), GRASS)
+    box("path", (0, 25, 0.0), (2.2, 80, 0.02), PATH)
+    for i in range(7):
+        y = 4 + i * 7
+        for side in (-1.6,):
+            box(f"pole{i}", (side, y, 1.6), (0.08, 0.08, 3.2), POLE)
+            blob(f"bulb{i}", (side + 0.25, y, 3.15), (0.12, 0.12, 0.1), BULB)
+            light("POINT", (side + 0.25, y, 3.0), 120 if i < 6 else 60, (1.0, 0.55, 0.2))
+    random.seed(11)
+    for i in range(26):
+        x = random.choice([-1, 1]) * random.uniform(3.5, 9); y = random.uniform(-2, 50)
+        blob(f"tree{i}", (x, y, 2.4), (1.1, 1.1, 2.4), TREE)
+        box(f"trunk{i}", (x, y, 0.6), (0.2, 0.2, 1.2), POLE)
+    fb, fh = figure((0.1, 32.0, 0.0), 2.0)
+    cam = camera((0.2, 0.0, 1.6), (-0.4, 40, 1.3), lens=35)
+    handheld(cam, 0.006, 0.004)
+
 if SHOT == "tavan":
     cam = camera((-1.6, -0.55, 0.85), (-0.2, 1.2, 2.75), lens=20)
     handheld(cam, 0.003, 0.004)

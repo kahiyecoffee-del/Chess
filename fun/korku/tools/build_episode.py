@@ -12,7 +12,7 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent))
-from fisilti_tts import synth, whisperize  # noqa: E402
+from fisilti_tts import synth, whisperize, full_whisper  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 BUILD = ROOT / "build"
@@ -50,6 +50,52 @@ EPISODES = {
         ("say", "Bana güven. Seni henüz görmedi. Seni sadece duyuyor."), ("pause", 1.0),
         ("event", "drone_on"),
         ("say", "İki yolun var."),
+    ]},
+    "b2": {"title": "2. Bölüm — Kayıt", "tail": 4.0, "speed": 0.85, "beats": [
+        ("shot", "sabah"), ("pause", 1.6),
+        ("say", "Sabah oldu, Zehra."),
+        ("say", "Pencereden gri bir ışık giriyor. Elif'in yatağı… dümdüz. Yorgan katlanmış, köşeleri gergin. Kimse yatmamış."),
+        ("say", "Rüyaydı, diyorsun kendine. Karabasan. Herkesin başına gelir."),
+        ("say", "Telefonuna uzanıyorsun."),
+        ("shot", "telefon1"),
+        ("say", "Bir ses kaydı var. Saat üçte başlamış. Üç dakika, yedi saniye."),
+        ("say", "Sen kaydetmedin. Biliyorsun."), ("pause", 0.8),
+        ("say", "Oynat'a basıyorsun."),
+        ("shot", "telefon2"), ("event", "rec_breath"), ("pause", 2.5),
+        ("say", "Önce kendi nefesini duyuyorsun. Uykudaki, yavaş nefesin."), ("pause", 1.0),
+        ("say", "Sonra… bir nefes daha."), ("pause", 1.2),
+        ("say", "Çok yakın. Mikrofonun dibinde."),
+        ("say", "İkinci nefes seninkinden biraz hızlı. Sonra yavaşlıyor. Yavaşlıyor… ta ki seninkiyle aynı olana kadar."),
+        ("event", "rec_stop"), ("say", "Kaydı durduruyorsun. Elin titriyor."),
+        ("shot", "kampus"),
+        ("say", "Gün boyu düşünmemeye çalışıyorsun. Derse giriyorsun. Kimse bir şey fark etmiyor."),
+        ("say", "Ama akşam yurda dönerken… arkandan adım sesleri geliyor."), ("event", "steps"), ("pause", 3.0),
+        ("say", "Sen durunca…"), ("event", "steps_stop"), ("pause", 0.6), ("say", "onlar da duruyor."), ("pause", 1.2),
+        ("say", "Arkana bakıyorsun. Yol boş. Sadece sokak lambaları… ve lambaların birinin altında, biri."),
+        ("say", "Kıpırdamıyor. Sana bakıyor. Yüzünü göremiyorsun, ama biliyorsun."),
+        ("shot", "mesaj"), ("event", "buzz"), ("pause", 1.4),
+        ("say", "Telefonun titriyor. Eray. Neredesin? Bir şey mi oldu?"),
+        ("say", "Kaydın üç dakika yedi saniye olduğunu hatırlıyorsun. Sen sadece bir dakikasını dinledin."),
+        ("say", "Bence dinlemelisin, Zehra. Bilmek… korkmaktan iyidir."), ("pause", 0.8),
+        ("say", "Ama aklına anneannen geliyor. Köydeki ev. Hep derdi: Seni bir şey rahatsız ederse buraya gel. Bu ev seni korur."),
+        ("event", "drone_on"), ("say", "İki yolun var."),
+    ]},
+    "s2b": {"title": "Son — Üçüncü Kez", "tail": 5.0, "speed": 0.85, "beats": [
+        ("shot", "telefon3"), ("event", "rec_breath"), ("pause", 1.5),
+        ("say", "Kulaklığını takıyorsun. Kaydı kaldığın yerden açıyorsun."), ("pause", 1.5),
+        ("say", "İki nefes. Aynı anda. Sonra bir ses… çok alçak."), ("pause", 1.0),
+        ("say_w", "Zehra."), ("pause", 1.2),
+        ("say", "Kendi sesin. Uykunda konuşuyorsun sanıyorsun."), ("pause", 0.8),
+        ("say_w", "Zehra."), ("pause", 1.0),
+        ("say", "Bu sefer daha yakın. Sayaç üç dakika beşte. Kayıt neredeyse bitti."),
+        ("say", "Üçüncü kez geldiğinde cevap verme. Bunu biliyorsun. Herkes bilir."), ("pause", 1.2),
+        ("say_w", "Zehra."), ("pause", 0.9),
+        ("say_c", "Efendim?"), ("pause", 1.2), ("event", "rec_stop"),
+        ("shot", "oda"), ("event", "breath_on"),
+        ("say", "Kendi ağzından çıktığını duyuyorsun."),
+        ("say", "Kayıt bitti. Ama nefes sesi… devam ediyor."), ("pause", 1.0),
+        ("say", "Kulaklığı çıkarıyorsun. Nefes sesi hâlâ orada."), ("pause", 1.2),
+        ("event", "heart_on"), ("say", "Odanın içinde."),
     ]},
     "s1b": {"title": "Son — Sesin", "tail": 5.0, "beats": [
         ("shot", "ayakucu"), ("event", "heart_on"), ("pause", 0.8),
@@ -131,6 +177,28 @@ def ambience(total, events):
                 env = np.sin(np.linspace(0, np.pi, len(seg))) ** 1.5
                 place(buf, seg * env * amp, k * 4.0 + off, pan=0.6)
             k += 1
+    # recording: two breaths, the second one faster, slowing until it matches the first
+    if "rec_breath" in ev:
+        b3, a3 = butter(2, [300 / (SR / 2), 2200 / (SR / 2)], btype="band")
+        t0, end = ev["rec_breath"], ev.get("rec_stop", total)
+        for period, amp, pan, conv in ((4.6, 0.08, -0.2, False), (3.2, 0.11, 0.35, True)):
+            t, p = t0 + (1.5 if conv else 0), period
+            while t < end:
+                for off, dur, a_ in ((0.0, p * 0.4, amp), (p * 0.5, p * 0.45, amp * 1.2)):
+                    seg = lfilter(b3, a3, rng.standard_normal(int(SR * dur)))
+                    place(buf, seg * np.sin(np.linspace(0, np.pi, len(seg))) ** 1.5 * a_, t + off, pan=pan)
+                t += p
+                if conv: p = min(4.6, p + 0.25)
+    # footsteps on a path: steady, then they stop when she stops
+    if "steps" in ev:
+        t, end = ev["steps"], ev.get("steps_stop", total)
+        while t < end:
+            place(buf, click(90, 0.12, 45, 0.18) + click(400, 0.12, 120, 0.04), t, pan=0.1); t += 0.62
+    # phone vibration: two short buzzes
+    if "buzz" in ev:
+        for k in (0, 0.55):
+            m = int(SR * 0.35); tt = np.arange(m) / SR
+            place(buf, np.sign(np.sin(2 * np.pi * 170 * tt)) * 0.05 * np.sin(np.pi * tt / 0.35), ev["buzz"] + k, pan=0.4)
     # heartbeat 68 bpm
     if "heart_on" in ev:
         t, end = ev["heart_on"], ev.get("heart_off", total)
@@ -180,8 +248,13 @@ def build(eid):
         elif kind == "pause":
             narr.append(np.zeros(int(SR * val))); t += val
         else:
-            x, sr = synth(val, 0.88)
-            w = to_sr(whisperize(x, sr), sr)
+            x, sr = synth(val, spec.get("speed", 0.88))
+            if kind == "say_w":   # the thing's voice: full whisper, quieter
+                w = to_sr(full_whisper(x, sr), sr) * 0.7
+            elif kind == "say_c":  # Zehra's own voice: clean, no breath layer
+                w = to_sr(whisperize(x, sr, 0.0), sr)
+            else:
+                w = to_sr(whisperize(x, sr), sr)
             narr.append(w); narr.append(np.zeros(int(SR * 0.55)))
             t += len(w) / SR + 0.55
     total = t + spec["tail"]
