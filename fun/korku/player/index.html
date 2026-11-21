@@ -40,7 +40,8 @@ const G = {
           {to:"b3",  t:"Anneannenin köy evine git", s:"“Bu gece şehirden uzaklaş.”"},
           {to:"s2b", t:"Kaydı sonuna kadar dinle", s:"“Bilmek… korkmaktan iyidir.”"}]},
   s2b: {video:"s2b.mp4", title:"Son · Üçüncü Kez", end:true, back:"b2"},
-  b3:  {soon:true, title:"3. Bölüm · Eşik"}
+  b3:  {video:"b3.mp4", title:"3. Bölüm · Eşik", next:"b4"},
+  b4:  {soon:true, title:"4. Bölüm · Kapı"}
 };
 const KEY = "fisilti-progress-v1";
 let st = {node:null, seen:[]};
@@ -80,6 +81,11 @@ function after(id) {
       <button class="link" id="restart">Baştan başla</button></div>`;
     document.getElementById("back").onclick = () => play(n.back);
     document.getElementById("restart").onclick = () => { st = {node:null, seen:[]}; save(); play("b1"); };
+    return;
+  }
+  if (n.next) {
+    box.innerHTML = `<div class="choices"><button class="btn primary" id="nx">Devam et</button></div>`;
+    document.getElementById("nx").onclick = () => play(n.next);
     return;
   }
   box.innerHTML = `<div class="choices">` + n.choices.map((c, i) =>

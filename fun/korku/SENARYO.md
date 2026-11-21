@@ -93,3 +93,17 @@ Ama sen yatağındasın, Zehra. Gözlerin açık. Kıpırdayamıyorsun.
 Ve kapıları çalmaya devam ediyor.
 
 **— SON —**
+
+---
+
+# GÜNCELLEME — 3–7. bölümler seçimsiz, ~8 dakika
+
+1. ve 2. bölümler seçimli kalıyor. 2. bölümde "köy evine git" seçilince hikâye 3. bölümden itibaren **tek yol** olarak, her bölüm ~8 dakika devam ediyor. Eski dallardaki fikirler ana hikâyeye katıldı (Zehra hem bıçağı hem tuzu kullanıyor).
+
+| # | Bölüm | Mekân | Özet |
+|---|---|---|---|
+| 3 | **Eşik** | Gece yolu → anneannenin köy evi | Son dolmuşla köye varış. Boş ev, anneannenin kokusu. Komşu Hatice teyzenin kuralları: gece kapı çalarsa açma, adın üç kez seslenirse cevap verme, davet etmedikçe giremez. Eşiğe tuz, yastık altına demir bıçak. Tavan arasında sesler. Saat üçe doğru ilk vuruş. |
+| 4 | **Kapı** | Köy evi, 03.00 | Kapıda Eray'ın sesi: "Zehra aç, benim." Zehra gerçek Eray'ı arıyor; Eray İstanbul'dan uykulu sesle açıyor. Dışarıdaki ses konuşmaya devam ediyor. Fısıltı "aç" diyor. Tuz kararıyor, pencere tırmalanıyor. Şafakta anneannenin eski arabasıyla kaçış. |
+| 5 | **Yedi Numara** | Sisli yol → Yayla Oteli | Araba bozuluyor. Boş otel, resepsiyon zili. Giriş defterinde Zehra'nın el yazısıyla kendi adı, yarının tarihi, oda 7. Koridor, anahtar, telefon ölüyor. |
+| 6 | **Fısıltının Sahibi** | Otel, 7 numara | Fısıltı kendisiyle çelişmeye başlıyor. Gerçek: anlatıcı o şey. Zehra kulaklarını kapatıp anneannesinin ninnisini söylüyor; ses öfkeleniyor. Demir bıçak, avuçta kan. Eray'dan mesaj: "Konumunu attın, geliyorum." (Zehra hiç konum atmadı.) |
+| 7 | **Adın** | Otel → şafak | Varlık adını çağırıyor. Eray kapıda. Gerçek mi? Gerçek Eray üç kez seslenmiyor. Şafakta kaçış. Arabada omzuna yaslanırken kulağında son fısıltı: "…Zehra." |

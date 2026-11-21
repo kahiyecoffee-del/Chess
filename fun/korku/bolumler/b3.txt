@@ -1,0 +1,123 @@
+#shot yol
+#pause 2
+Son dolmuş, Zehra.
+Arka koltukta tek başınasın. Şoför aynadan sana bakmıyor. Kimse sana bakmıyor. Bu iyi bir şey, değil mi?
+Camın dışında karanlık. Ara sıra bir direk, bir tabela, sonra yine karanlık.
+Telefonuna bakıyorsun. Eray'a yazdın: Anneannemin evine gidiyorum, merak etme.
+Görüldü. Ama cevap yok.
+#pause 1.5
+Kaydı silmedin. Biliyorsun.
+Cebinde duruyor. Üç dakika yedi saniye. Dinlemediğin iki dakika.
+Bazen kulağına bir nefes geliyormuş gibi oluyor. Dönüp bakıyorsun. Koltuk boş.
+#pause 1.5
+Dolmuş bir virajda yavaşlıyor. Farların ışığında yol kenarında biri duruyor gibi. Uzun, ince.
+Göz kırpıyorsun. Bir direk. Sadece bir direk.
+Ama dolmuş geçerken, direğin başını çevirdiğini görüyorsun, Zehra.
+#pause 2
+Şoför radyoyu açıyor. Cızırtı. Sonra eski bir türkü. Anneannenin söylediği türkü.
+Radyo kendiliğinden kapanıyor. Şoför bir şey demiyor. Sen de demiyorsun.
+#pause 1.2
+Köye varmadan şoför duruyor. Buradan sonrasına gitmiyorum, diyor. Yol bozuk.
+Yol bozuk değil, Zehra. Ama inip yürüyorsun.
+#event steps
+#shot koy_dis
+#pause 2
+Anneannenin evi tepenin başında. Hatırladığından küçük.
+Bahçe kapısı gıcırdıyor. Avludaki dut ağacı kurumuş. Ama dallarında hâlâ birkaç yaprak, rüzgârda sallanıyor.
+Rüzgâr yok ama, Zehra.
+#event steps_stop
+#pause 1.5
+Anahtar her zamanki yerinde. Kapının yanındaki saksının altında.
+Anneannen öleli bir yıl oldu. Saksı hâlâ orada. Anahtar hâlâ orada.
+Sanki biri seni bekliyormuş gibi.
+#pause 1.5
+Küçükken yazları burada geçerdi, hatırlıyor musun? Anneannen akşamları kapının önüne bir kâse su koyardı.
+Ne için, diye sorardın. Gece gelenler susamasın, derdi. Susayan kapıyı çalar.
+Sen gülerdin. O gülmezdi.
+#shot ev_ic
+#event clock_on
+#pause 2
+İçerisi soğuk. Ve anneannenin kokusu hâlâ duvarlarda. Lavanta, sabun, biraz da soba dumanı.
+Divan, kilim, duvardaki eski saat. Saat çalışıyor, Zehra. Bir yıldır kimse kurmadı ama çalışıyor.
+Sobayı yakıyorsun. Ateşin sesi biraz iyi geliyor.
+Duvardaki fotoğraflara bakıyorsun. Anneannen, deden, annen küçükken. Bir de sen. Beş yaşında, bu avluda.
+Fotoğrafta arkanda biri var. Daha önce hiç fark etmemiştin.
+Pencerenin camında, belli belirsiz, uzun bir gölge.
+#pause 2
+Burada güvendesin. Ben buradayım.
+#pause 1.5
+Kapı çalıyor.
+#event knock
+#pause 2
+Kalbin ağzına geliyor. Ama ses tanıdık. Hatice teyze. Alt komşu.
+Kızım, ışığı görünce geldim, diyor. Anneanneni çok severdim.
+Elinde bir tabak sıcak börek. Ve bir bez kese.
+#shot hatice
+#pause 1.5
+Hatice teyze divana oturuyor. Yüzüne bakmıyor. Gözleri hep pencerede.
+Seni çağıran var, değil mi, diyor. Sorar gibi değil. Bilir gibi.
+Cevap vermiyorsun. Gerek yok.
+Anneannen de duyardı, diyor. Bu evdeki kadınlar hep duyar.
+#pause 1.5
+Anneannen gençken bir kış, üç gece boyunca kapısı çalınmış. Her gece saat üçte.
+Dışarıdan kocasının sesi gelirmiş. Aç, donuyorum, dermiş. Oysa kocası o hafta şehirdeymiş.
+Anneannen açmamış. Üç gece boyunca, sabaha kadar ninni söyleyerek beklemiş. Kendi annesinin ninnisini.
+Dördüncü gece ses gelmemiş. Ama sabah eşikte, tuzun üstünde, çıplak ayak izleri varmış. Ters dönmüş ayak izleri.
+#pause 1.5
+Sonra kurallarını sayıyor. Parmaklarıyla, tek tek.
+Bir. Gece kapı çalarsa açma. Kim olursa olsun. Sesi kime benzerse benzesin.
+İki. Adın üç kez seslenirse, cevap verme. İki kez olabilir. Üçüncüsü onundur.
+Üç. Davet etmedikçe içeri giremez. Ama bir kere davet edersen, bir daha çıkmaz.
+#pause 1.5
+Bez keseyi açıyor. İçinde iri taneli tuz. Ve siyah saplı, eski bir bıçak.
+Tuzu eşiğe dök, diyor. Bütün eşiklere. Bıçağı yastığının altına koy. Demirden korkarlar.
+Hatice teyze, bunlar masal, diyorsun.
+Gülümsüyor. Masal da, diyor, birileri yaşadığı için anlatılır.
+#pause 1.2
+Kalkarken kapıda duruyor. Bir şey daha, diyor.
+Sana fısıldayan bir ses varsa… ona hiçbir şey sorma, kızım.
+Kapıyı kapatıyor.
+#pause 2
+Kadın yaşlı, Zehra. Karıştırıyor. Ben sana zarar vermem ki.
+Ben seni karabasandan uyandırdım, unuttun mu? Kayıttan korudum. Buraya kadar ben getirdim seni.
+#pause 1.5
+Bunu düşünüyorsun. Buraya gelmek… kimin fikriydi?
+#shot esik
+#pause 1.5
+Yine de tuzu döküyorsun.
+Ön kapının eşiğine, ince bir çizgi. Mutfak kapısına. Pencerelerin önüne.
+Taneler parmaklarının arasından akarken sesleri garip geliyor. Kumdan çok, dişe benziyor.
+Bıçağı yastığının altına koyuyorsun. Sapı soğuk. Sanki az önce biri tutmuş gibi.
+#shot tavan_arasi
+#pause 2
+Gece ilerliyor. Soba sönmeye yüz tuttu.
+Yukarıdan bir ses geliyor. Tavan arasından.
+Bir şey sürükleniyor. Tahtaların üstünde. Yavaşça.
+Sonra duruyor. Tam başının üstünde.
+#pause 2.5
+Anneannen tavan arasına kimseyi çıkarmazdı, hatırlıyor musun? Kapağın üstüne hep bir ip bağlardı.
+İp hâlâ orada. Bağlı.
+Ama düğüm… içeriden atılmış.
+#event radiator_off
+#pause 2
+#shot pencere
+Saat ikiye on var.
+Telefonuna bakıyorsun. Eray'dan hâlâ cevap yok. Şebeke tek çizgi.
+Pencerenin dışında kurumuş dut ağacı. Dalları cama vuruyor.
+Rüzgâr yok, Zehra. Bunu artık ikimiz de biliyoruz.
+#pause 1.5
+Uyuma. Bu gece uyuma. Ben seni uyandırırım ama… bu gece uyuma.
+Gözlerin kapanıyor.
+#pause 2
+#event heart_on
+Saat üç.
+#pause 2.5
+Bir vuruş.
+#event knock
+#pause 1
+İki.
+#pause 1
+Üç.
+#pause 2
+Tuzun… kıpırdadığını görüyor musun?
+#event drone_on

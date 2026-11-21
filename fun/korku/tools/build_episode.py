@@ -20,6 +20,8 @@ FRAMES = BUILD / "frames"
 OUT = ROOT / "player"
 SR = 44100
 SHOT_FPS = 12
+GAMMA = {"kampus": 1.05, "telefon": 1.0, "mesaj": 1.0, "koridor": 1.1, "sabah": 1.2, "yol": 1.35, "koy_dis": 1.1,
+         "ev_ic": 1.15, "hatice": 1.15, "esik": 1.1, "tavan_arasi": 1.15, "pencere": 1.25}
 
 EPISODES = {
     "b1": {"title": "1. Bölüm — 03.00", "tail": 4.0, "beats": [
@@ -235,8 +237,28 @@ def ambience(total, events):
     return buf
 
 
+def load_text_episode(eid):
+    """bolumler/<eid>.txt: '#shot x', '#pause n', '#event x', '#say_w text', '#say_c text', '#title t', else narration."""
+    beats, title = [], eid
+    for line in (ROOT / "bolumler" / f"{eid}.txt").read_text().splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        if line.startswith("#"):
+            cmd, _, arg = line[1:].partition(" ")
+            if cmd == "title":
+                title = arg
+            elif cmd == "pause":
+                beats.append(("pause", float(arg)))
+            elif cmd in ("shot", "event", "say_w", "say_c"):
+                beats.append((cmd, arg))
+        else:
+            beats.append(("say", line))
+    return {"title": title, "tail": 5.0, "speed": 0.84, "beats": beats}
+
+
 def build(eid):
-    spec = EPISODES[eid]
+    spec = EPISODES[eid] if eid in EPISODES else load_text_episode(eid)
     work = BUILD / eid; work.mkdir(parents=True, exist_ok=True)
     narr, t = [], 0.0
     shots, events = [], []
@@ -281,7 +303,7 @@ def build(eid):
         else:
             filt = "[0:v]loop=loop=-1:size=9999,"
         filt += (f"fps=24,trim=duration={dur:.3f},setpts=PTS-STARTPTS,hqdn3d=4:3:6:6,"
-                 "eq=gamma=1.45:contrast=1.04:brightness=0.02:saturation=0.9,"
+                 f"eq=gamma={GAMMA.get(name.rstrip('0123456789'), 1.45)}:contrast=1.04:brightness=0.02:saturation=0.9,"
                  "noise=alls=9:allf=t,vignette=PI/5.5,"
                  f"fade=t=in:st=0:d=0.6,fade=t=out:st={max(0, dur - 0.5):.3f}:d=0.5[v]")
         subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-framerate", str(SHOT_FPS), "-i", src,
