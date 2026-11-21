@@ -208,8 +208,8 @@ def build(eid):
         else:
             filt = "[0:v]loop=loop=-1:size=9999,"
         filt += (f"fps=24,trim=duration={dur:.3f},setpts=PTS-STARTPTS,hqdn3d=4:3:6:6,"
-                 "eq=gamma=1.05:contrast=1.08:saturation=0.85,"
-                 "noise=alls=10:allf=t,vignette=PI/4,"
+                 "eq=gamma=1.45:contrast=1.04:brightness=0.02:saturation=0.9,"
+                 "noise=alls=9:allf=t,vignette=PI/5.5,"
                  f"fade=t=in:st=0:d=0.6,fade=t=out:st={max(0, dur - 0.5):.3f}:d=0.5[v]")
         subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-framerate", str(SHOT_FPS), "-i", src,
                         "-filter_complex", filt, "-map", "[v]", "-c:v", "libx264", "-pix_fmt", "yuv420p",
