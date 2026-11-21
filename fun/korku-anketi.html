@@ -1,0 +1,148 @@
+<title>Gece Yarısı Anketi</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: one candle-lit card per step, progress thread on top. Deliberately single dark theme. */
+:root{--bg:#0B0A0D;--card:#141217;--ink:#ECE6DD;--muted:#9C948A;--line:#2A2530;--blood:#B3261E;--ember:#D98C4A;--sel:#22171A;
+--f-display:"Cormorant Garamond",Georgia,serif;--f-body:Inter,system-ui,sans-serif;color-scheme:dark}
+body{background:radial-gradient(120% 80% at 50% -10%,#1C1418 0%,var(--bg) 60%) fixed,var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;
+padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 56px;min-height:100%}
+.wrap{max-width:620px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.thread{height:3px;background:var(--line);border-radius:3px;overflow:hidden}.thread i{display:block;height:100%;background:linear-gradient(90deg,var(--blood),var(--ember));width:0;transition:width .4s}
+.step-label{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+h1,h2{font-family:var(--f-display);font-weight:700;line-height:1.1;text-wrap:balance;margin:0}
+h1{font-size:44px}h2{font-size:32px}
+.lead{color:var(--muted);margin:0;max-width:60ch}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:22px}
+.q{display:flex;flex-direction:column;gap:10px}
+.q > label,.q > .qt{font-weight:600}
+.q small{color:var(--muted);font-weight:400;display:block;margin-top:2px}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{border:1px solid var(--line);background:transparent;color:var(--ink);font:500 14px var(--f-body);padding:9px 14px;border-radius:999px;cursor:pointer;min-height:40px;text-align:left}
+.opt[aria-pressed="true"]{background:var(--sel);border-color:var(--blood);color:#fff}
+.opt.no[aria-pressed="true"]{border-color:var(--ember)}
+input[type=text],textarea{width:100%;background:#0F0D11;border:1px solid var(--line);border-radius:10px;color:var(--ink);font:15px var(--f-body);padding:11px 12px}
+textarea{min-height:84px;resize:vertical}
+.scale{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.scale .opt{border-radius:10px;text-align:center;padding:10px 4px}
+.ends{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.nav{display:flex;justify-content:space-between;gap:10px}
+.btn{font:600 15px var(--f-body);border-radius:12px;padding:13px 20px;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--ink);min-height:48px}
+.btn.primary{background:var(--blood);border-color:var(--blood);color:#fff;flex:1}
+.btn[disabled]{opacity:.4;cursor:default}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+.note{border-left:2px solid var(--ember);padding-left:12px;color:var(--muted);font-size:14px}
+pre.out{white-space:pre-wrap;word-break:break-word;background:#0F0D11;border:1px solid var(--line);border-radius:10px;padding:14px;font-size:13.5px;line-height:1.5;max-height:360px;overflow:auto;margin:0}
+.err{color:#F08A80;font-size:14px;min-height:1em}
+@media (prefers-reduced-motion:reduce){.thread i{transition:none}}
+</style>
+<div class="wrap">
+  <div class="thread" aria-hidden="true"><i id="bar"></i></div>
+  <div id="app"></div>
+</div>
+<script>
+const STEPS = [
+  {intro:true},
+  {title:"Seni tanıyalım", qs:[
+    {id:"isim", type:"text", label:"Hikâyede sana nasıl seslenilsin?", hint:"Adın, takma adın ya da tamamen uydurma bir isim."},
+    {id:"karakter", type:"single", label:"Hikâyedeki karakter kim olsun?", opts:["Ben olayım, birebir","Bana benzeyen biri","Tamamen kurgu bir karakter"]},
+    {id:"izleme", type:"multi", label:"Nasıl izlemeyi düşünüyorsun?", opts:["Gece, ışıklar kapalı","Kulaklıkla","Yalnız","Birlikte","Gündüz, güvende :)"]}
+  ]},
+  {title:"Hangi korku?", qs:[
+    {id:"tur", type:"multi", label:"Seni en çok hangisi geriyor?", hint:"İstediğin kadar seç.", opts:["Psikolojik gerilim","Hayalet / ruh","Cin, karabasan, Türk folkloru","Bulunmuş kayıt / kamera görüntüsü","Bilinmeyen bir varlık","Zaman döngüsü / gizem","Lanetli eşya","Takip edilme hissi","Kanlı sahneler (slasher)"]},
+    {id:"mekan", type:"multi", label:"Hangi mekân ürpertir?", opts:["Eski İstanbul apartmanı","Köy evi","Terk edilmiş hastane","Yurt / okul","Boş bir otel","Orman","Son vapur / gece deniz","Bana benzeyen modern bir daire"]},
+    {id:"sevdigi", type:"text", label:"Sevdiğin bir korku filmi, dizisi ya da hikâyesi?", hint:"Boş bırakabilirsin."}
+  ]},
+  {title:"Ne kadar korkalım?", qs:[
+    {id:"yogunluk", type:"scale", label:"Genel korku seviyesi", ends:["Hafif ürperti","Uyuyamayayım"]},
+    {id:"jumpscare", type:"scale", label:"Ani korkutmalar (jump scare)", ends:["Hiç olmasın","Bol olsun"]},
+    {id:"kan", type:"scale", label:"Kan ve vahşet", ends:["Hiç","Sert"]},
+    {id:"son", type:"single", label:"Sonlar nasıl olsun?", opts:["Kurtulma şansım hep olsun","Bazı seçimler kötü bitsin","Acımasız olsun, çoğu yol kötü bitsin"]}
+  ]},
+  {title:"Sınırların", sub:"Bu kısım en önemlisi. İşaretlediğin hiçbir şey hikâyede olmayacak.", qs:[
+    {id:"yasak", type:"multi", cls:"no", label:"Bunlar kesinlikle OLMASIN", opts:["Örümcek / böcek","İğne / hastane işlemleri","Boğulma / su altı","Dar, kapalı alan","Yükseklik","Çocuklara zarar","Hayvanlara zarar","Bebek / hamilelik","Kendine zarar verme","Taciz / istismar","Deprem / doğal afet","Palyaço","Oyuncak bebek","Aynalar","Diş / tırnak","Yılan"]},
+    {id:"yasak_diger", type:"text", label:"Listede olmayan başka bir şey?", hint:"Örneğin belirli bir korkun, kötü bir anın ya da sadece sevmediğin bir şey."},
+    {id:"stop", type:"single", label:"Çok korkarsan ne olsun?", opts:["Her bölümde 'çık' seçeneği olsun","Gerek yok, sonuna kadar giderim"]}
+  ]},
+  {title:"Ses ve tempo", qs:[
+    {id:"anlatici", type:"single", label:"Anlatıcının sesi", opts:["Kadın, sakin","Erkek, derin","Fısıltı","Fark etmez"]},
+    {id:"sure", type:"single", label:"Bir bölüm ne kadar sürsün?", opts:["2–3 dakika","5 dakika","10 dakika"]},
+    {id:"bolum", type:"single", label:"Kaç bölüm?", opts:["3","5","7"]},
+    {id:"muzik", type:"single", label:"Arka plan", opts:["Gerilim müziği","Sadece ortam sesleri","Neredeyse sessiz"]}
+  ]},
+  {title:"Küçük kişisel dokunuşlar", sub:"Hepsi isteğe bağlı. Hikâyede ipucu ya da sürpriz olarak kullanılabilir.", qs:[
+    {id:"renk", type:"text", label:"Sevdiğin bir renk"},
+    {id:"sarki", type:"text", label:"Sana bir şey hatırlatan bir şarkı"},
+    {id:"koku", type:"text", label:"Sana güven veren bir koku ya da eşya"},
+    {id:"sevgili", type:"single", label:"Sevgilin hikâyede görünsün mü?", opts:["Evet, kurtarıcı olarak","Evet, şüpheli olarak :)","Hayır, olmasın"]},
+    {id:"son_not", type:"textarea", label:"Eklemek istediğin bir şey?"}
+  ]},
+  {done:true}
+];
+const KEY = "gece-anketi-v1";
+let A = {}, step = 0;
+try { const s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s) { A = s.A || {}; step = Math.min(s.step || 0, STEPS.length - 1); } } catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify({A, step})); } catch (e) {} };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const app = document.getElementById("app");
+
+function render() {
+  document.getElementById("bar").style.width = (100 * step / (STEPS.length - 1)) + "%";
+  const S = STEPS[step];
+  if (S.intro) {
+    app.innerHTML = `<div class="card"><span class="step-label">Sana özel bir korku deneyimi</span>
+      <h1>Gece Yarısı Anketi</h1>
+      <p class="lead">Birkaç bölümlük, Türkçe seslendirmeli, interaktif bir korku hikâyesi hazırlanıyor. Her bölümün sonunda iki seçenek olacak ve hikâye senin seçimlerinle ilerleyecek.</p>
+      <p class="lead">Bu anket hikâyeyi sana göre ayarlamak için: neyden hoşlandığını, ne kadar korkmak istediğini ve <b>neyin kesinlikle olmaması gerektiğini</b> sen belirliyorsun. Yaklaşık 3 dakika.</p>
+      <div class="nav"><button class="btn primary" id="next">Başla</button></div></div>`;
+  } else if (S.done) {
+    app.innerHTML = `<div class="card"><span class="step-label">Bitti</span><h2>Kayıt alındı… şaka şaka.</h2>
+      <p class="lead">Cevapların hiçbir yere gönderilmedi. Aşağıdaki metni kopyalayıp sevgiline gönder; hikâye buna göre hazırlanacak.</p>
+      <pre class="out" id="out">${esc(summary())}</pre>
+      <div class="nav"><button class="btn" id="back">Geri</button><button class="btn primary" id="copy">Metni kopyala</button></div>
+      <p class="err" id="msg" role="status"></p></div>`;
+  } else {
+    app.innerHTML = `<div class="card"><span class="step-label">Bölüm ${step} / ${STEPS.length - 2}</span><h2>${S.title}</h2>${S.sub ? `<p class="note">${S.sub}</p>` : ""}
+      ${S.qs.map(q => qHtml(q)).join("")}
+      <div class="nav"><button class="btn" id="back">Geri</button><button class="btn primary" id="next">${step === STEPS.length - 2 ? "Bitir" : "Devam"}</button></div></div>`;
+  }
+  bind();
+  window.scrollTo({top: 0});
+}
+function qHtml(q) {
+  const v = A[q.id];
+  const head = `<div class="qt">${q.label}${q.hint ? `<small>${q.hint}</small>` : ""}</div>`;
+  if (q.type === "text") return `<div class="q"><label for="${q.id}">${q.label}${q.hint ? `<small>${q.hint}</small>` : ""}</label><input type="text" id="${q.id}" data-q="${q.id}" value="${esc(v || "")}"></div>`;
+  if (q.type === "textarea") return `<div class="q"><label for="${q.id}">${q.label}</label><textarea id="${q.id}" data-q="${q.id}">${esc(v || "")}</textarea></div>`;
+  if (q.type === "scale") return `<div class="q">${head}<div class="scale">${[1,2,3,4,5].map(n => `<button class="opt" data-s="${q.id}" data-v="${n}" aria-pressed="${v === n}">${n}</button>`).join("")}</div><div class="ends"><span>${q.ends[0]}</span><span>${q.ends[1]}</span></div></div>`;
+  const multi = q.type === "multi";
+  return `<div class="q">${head}<div class="opts">${q.opts.map(o => {
+    const on = multi ? (v || []).includes(o) : v === o;
+    return `<button class="opt ${q.cls || ""}" data-${multi ? "m" : "o"}="${q.id}" data-v="${esc(o)}" aria-pressed="${on}">${esc(o)}</button>`; }).join("")}</div></div>`;
+}
+function bind() {
+  app.querySelectorAll("[data-q]").forEach(el => el.addEventListener("input", () => { A[el.dataset.q] = el.value; save(); }));
+  app.querySelectorAll("[data-o]").forEach(b => b.addEventListener("click", () => { A[b.dataset.o] = b.dataset.v; save();
+    b.parentElement.querySelectorAll(".opt").forEach(x => x.setAttribute("aria-pressed", x === b)); }));
+  app.querySelectorAll("[data-s]").forEach(b => b.addEventListener("click", () => { A[b.dataset.s] = +b.dataset.v; save();
+    b.parentElement.querySelectorAll(".opt").forEach(x => x.setAttribute("aria-pressed", x === b)); }));
+  app.querySelectorAll("[data-m]").forEach(b => b.addEventListener("click", () => { const k = b.dataset.m, l = new Set(A[k] || []);
+    l.has(b.dataset.v) ? l.delete(b.dataset.v) : l.add(b.dataset.v); A[k] = [...l]; save(); b.setAttribute("aria-pressed", l.has(b.dataset.v)); }));
+  const n = document.getElementById("next"), bk = document.getElementById("back"), c = document.getElementById("copy");
+  if (n) n.onclick = () => { step++; save(); render(); };
+  if (bk) bk.onclick = () => { step = Math.max(0, step - 1); save(); render(); };
+  if (c) c.onclick = async () => { const t = summary(), m = document.getElementById("msg");
+    try { await navigator.clipboard.writeText(t); m.textContent = "Kopyalandı. Şimdi sevgiline yapıştırıp gönder."; }
+    catch (e) { const r = document.createRange(); r.selectNodeContents(document.getElementById("out")); const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      m.textContent = "Metin seçildi; uzun basıp 'Kopyala' de."; } };
+}
+function summary() {
+  const lines = ["GECE YARISI ANKETİ — CEVAPLAR"];
+  STEPS.forEach(S => { if (!S.qs) return; lines.push("", "## " + S.title);
+    S.qs.forEach(q => { let v = A[q.id]; if (v === undefined || v === "" || (Array.isArray(v) && !v.length)) v = "—";
+      else if (Array.isArray(v)) v = v.join(", "); else if (q.type === "scale") v = v + "/5"; lines.push(`- ${q.label}: ${v}`); }); });
+  return lines.join("\n");
+}
+render();
+</script>
