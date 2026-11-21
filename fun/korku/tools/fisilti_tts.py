@@ -32,7 +32,19 @@ def synth(text: str, speed: float) -> tuple[np.ndarray, int]:
     return np.concatenate(chunks).astype(np.float64), v.config.sample_rate
 
 
-def whisperize(x: np.ndarray, sr: int) -> np.ndarray:
+BREATH_MIX = 0.22  # 0 = clean voice, 1 = full whisper
+
+
+def whisperize(x: np.ndarray, sr: int, mix: float = BREATH_MIX) -> np.ndarray:
+    """Clean voice with a light breath layer: keeps the original quality, adds closeness."""
+    w = full_whisper(x, sr)
+    n = min(len(x), len(w))
+    clean = x[:n] / (np.max(np.abs(x)) + 1e-9)
+    y = clean * (1 - mix) + w[:n] * mix
+    return y / (np.max(np.abs(y)) + 1e-9) * 0.85
+
+
+def full_whisper(x: np.ndarray, sr: int) -> np.ndarray:
     f0, t = pw.harvest(x, sr)
     sp = pw.cheaptrick(x, f0, t, sr)
     ap = pw.d4c(x, f0, t, sr)
