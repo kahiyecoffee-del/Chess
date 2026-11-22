@@ -36,7 +36,12 @@ h3{font-size:17px;margin-bottom:8px}.c{text-align:center}
 .pl{margin:24px auto 0;width:44px;height:44px;border-radius:50%;background:#ff453a;display:grid;place-items:center;font-size:14px}
 .bub{background:#2c2c2e;border-radius:14px;padding:7px 10px;font-size:12px;margin:6px 0;width:fit-content}`;
 
-const shots = [['telefon1', memoList], ['telefon2', playing('1:02', 0.33, '08:15')], ['telefon3', playing('3:05', 0.99, '22:31')], ['mesaj', message]];
+const call = (status, tm) => phone(`<div style="text-align:center;margin-top:40px"><div style="width:74px;height:74px;border-radius:50%;background:#333;margin:0 auto 12px;display:grid;place-items:center;font-size:30px">E</div>
+  <h3 class="c">Eray</h3><small class="d c">${status}</small></div>
+  <div style="display:flex;justify-content:space-around;margin-top:110px"><span style="width:46px;height:46px;border-radius:50%;background:#333"></span><span style="width:46px;height:46px;border-radius:50%;background:#ff453a"></span><span style="width:46px;height:46px;border-radius:50%;background:#333"></span></div>`, tm);
+const ALL = [['arama1', call('aranıyor…', '03:04')], ['arama2', call('00:47', '03:05')], ['telefon1', memoList], ['telefon2', playing('1:02', 0.33, '08:15')], ['telefon3', playing('3:05', 0.99, '22:31')], ['mesaj', message]];
+const want = process.argv.slice(2);
+const shots = want.length ? ALL.filter(([n]) => want.includes(n)) : ALL;
 const N = 24;
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 640, height: 360 } });

@@ -201,6 +201,39 @@ def ambience(total, events):
         for k in (0, 0.55):
             m = int(SR * 0.35); tt = np.arange(m) / SR
             place(buf, np.sign(np.sin(2 * np.pi * 170 * tt)) * 0.05 * np.sin(np.pi * tt / 0.35), ev["buzz"] + k, pan=0.4)
+    # ringback tone (Turkey: 425 Hz, 1 s on / 3 s off), three rings
+    if "ring" in ev:
+        m = int(SR * 1.0); tt = np.arange(m) / SR
+        tone = np.sin(2 * np.pi * 425 * tt) * 0.06 * np.minimum(1, np.minimum(tt, 1 - tt) * 40)
+        for k in range(3):
+            place(buf, tone, ev["ring"] + k * 4.0, pan=0.3)
+    # call dropped: three short beeps
+    if "beep" in ev:
+        m = int(SR * 0.18); tt = np.arange(m) / SR
+        for k in range(3):
+            place(buf, np.sin(2 * np.pi * 950 * tt) * 0.06, ev["beep"] + k * 0.32, pan=0.3)
+    # fingernail on glass: slow downward scrape, band-passed and gliding
+    if "scratch" in ev:
+        for k in range(3):
+            d = 2.2; m = int(SR * d); seg = rng.standard_normal(m)
+            out = np.zeros(m)
+            for j in range(0, m, 2048):
+                fc = 3200 - 1800 * j / m
+                bb, aa = butter(2, [fc * 0.8 / (SR / 2), fc * 1.2 / (SR / 2)], btype="band")
+                out[j:j + 2048] = lfilter(bb, aa, seg[j:j + 2048])
+            env = np.sin(np.linspace(0, np.pi, m)) * (0.6 + 0.4 * np.sin(np.linspace(0, 40, m)))
+            place(buf, out / (np.max(np.abs(out)) + 1e-9) * env * 0.12, ev["scratch"] + 0.5 + k * 3.1, pan=-0.2)
+    # hummed lullaby (simple pentatonic tune), soft and close
+    if "lullaby" in ev:
+        notes = [(392, .6), (440, .6), (392, .6), (330, 1.2), (392, .6), (440, .6), (494, .6), (440, 1.2),
+                 (392, .6), (330, .6), (294, .6), (330, 1.8)]
+        t = ev["lullaby"]
+        for f0, d in notes:
+            m = int(SR * d); tt = np.arange(m) / SR
+            vib = np.sin(2 * np.pi * 5 * tt) * 3
+            tone = sum(np.sin(2 * np.pi * (f0 + vib) * h * tt) / h ** 1.4 for h in (1, 2, 3, 4))
+            env = np.minimum(1, tt / 0.08) * np.minimum(1, (d - tt) / 0.15)
+            place(buf, tone * env * 0.05, t); t += d
     # heartbeat 68 bpm
     if "heart_on" in ev:
         t, end = ev["heart_on"], ev.get("heart_off", total)
@@ -250,7 +283,7 @@ def load_text_episode(eid):
                 title = arg
             elif cmd == "pause":
                 beats.append(("pause", float(arg)))
-            elif cmd in ("shot", "event", "say_w", "say_c"):
+            elif cmd in ("shot", "event", "say_w", "say_c", "say_d", "say_p"):
                 beats.append((cmd, arg))
         else:
             beats.append(("say", line))
@@ -275,6 +308,17 @@ def build(eid):
                 w = to_sr(full_whisper(x, sr), sr) * 0.7
             elif kind == "say_c":  # Zehra's own voice: clean, no breath layer
                 w = to_sr(whisperize(x, sr, 0.0), sr)
+            elif kind in ("say_d", "say_p"):  # through a door / over the phone
+                from scipy.signal import butter, lfilter
+                c = to_sr(whisperize(x, sr, 0.0), sr)
+                if kind == "say_d":
+                    b_, a_ = butter(3, 900 / (SR / 2)); c = lfilter(b_, a_, c)
+                    echo = np.zeros_like(c); d = int(0.045 * SR); echo[d:] = c[:-d] * 0.35; c = c + echo
+                    c = c / (np.max(np.abs(c)) + 1e-9) * 0.75
+                else:
+                    b_, a_ = butter(3, [320 / (SR / 2), 3300 / (SR / 2)], btype="band"); c = lfilter(b_, a_, c)
+                    c = np.tanh(c * 2.5); c = c / (np.max(np.abs(c)) + 1e-9) * 0.7
+                w = c
             else:
                 w = to_sr(whisperize(x, sr), sr)
             narr.append(w); narr.append(np.zeros(int(SR * 0.55)))

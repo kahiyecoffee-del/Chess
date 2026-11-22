@@ -1,0 +1,145 @@
+#title 4. Bölüm — Kapı
+#shot kapi
+#event heart_on
+#pause 2.5
+Üç vuruş, Zehra.
+Sonra sessizlik. Sadece duvardaki saat. Tik. Tak. Bir yıldır kimsenin kurmadığı saat.
+#pause 2
+Yatağın içinde oturuyorsun. Yorganı çenene kadar çekmişsin. Küçükken yaptığın gibi.
+Yastığın altında bıçağın sapı. Elin üstünde. Ne zaman oraya koyduğunu hatırlamıyorsun.
+#pause 2
+Soba sönmüş. Odanın içi o kadar soğuk ki nefesin buğu oluyor.
+Dışarıda köpekler havlamıyor. Köyün bütün köpekleri. Hiçbiri.
+Anneannen derdi ki: Köpekler sustuysa, kapıya bakma.
+#pause 2
+Kapının altından ince bir ışık sızıyor. Soğuk, mavi bir ışık. Ay ışığı olmalı.
+Ama ay bu gece doğmadı, Zehra. Akşam pencereden baktın. Gökyüzü kapkaraydı.
+#pause 2
+Işığın içinden bir gölge geçiyor. Sağdan sola. Yavaşça.
+Sonra soldan sağa.
+Sonra duruyor. Tam ortada.
+#event heart_off
+#pause 3
+#say_d Zehra?
+#pause 2
+Nefesin kesiliyor.
+Çünkü bu sesi tanıyorsun.
+#say_d Zehra, aç kapıyı. Benim. Eray.
+#pause 2
+Eray.
+Eray burada olamaz. Eray şehirde. Saat üç. Dört saatlik yol.
+#say_d Mesajını gördüm, hemen çıktım. Ödüm koptu. Hadi aç, burası çok soğuk.
+#pause 1.5
+Sesi tıpatıp onun sesi, Zehra. Her şeyiyle. Gülerken sonunu yuttuğu kelimeler. Senin adını söylerken çıkan o küçük duraksama.
+Bunu nereden biliyor?
+#pause 2
+Aç, Zehra. O. Gerçekten o.
+Ben sana yalan söyledim mi hiç?
+#pause 2.5
+#shot arama1
+Telefonuna uzanıyorsun. Ellerin titriyor. Ekran parlıyor, gözlerin kamaşıyor.
+Eray'ı arıyorsun.
+#event ring
+#pause 4
+Çalıyor.
+#pause 2.5
+Bir kez daha.
+#pause 2
+#shot arama2
+#say_p Alo? Zehra? Saat kaç…
+#pause 1.5
+Uykulu. Boğuk. Odasında. Arkada onun saatinin tik takını bile duyuyorsun.
+Eray, diyorsun. Fısıltıyla. Neredesin?
+#say_p Evdeyim… uyuyordum. Ne oldu? Sesin niye öyle?
+#pause 1.5
+Kapıda biri var, diyorsun. Senin sesinle konuşuyor.
+#say_p Ne? Zehra, kötü bir rüya görmüşsün. Bak, ben buradayım. Odamdayım. Duyuyor musun? Buradayım.
+#pause 1.5
+Duyuyorsun. Onun nefesini. Gerçek nefesini. Sıcak, sakin.
+Bir an inanıyorsun. Bir an her şey geçecek gibi oluyor.
+#pause 2
+#shot kapi
+Ve o anda, kapının dışından…
+#say_d Zehra. Kimle konuşuyorsun?
+#pause 3
+Telefondaki Eray susuyor.
+#say_p Zehra… yanında biri mi var? Bu ses ne?
+#pause 1.5
+O da duyuyor, Zehra. Telefondan, kilometrelerce uzaktan. Kendi sesini duyuyor.
+#say_p Kapıyı açma. Duydun mu beni? Hiçbir şey için açma. Geliyorum. Şimdi çıkıyorum.
+#event beep
+#pause 2
+Hat kesiliyor. Şebeke yok. Tek çizgi bile yok.
+#pause 2.5
+#say_d Açmayacak mısın?
+#pause 2
+Kapının dışındaki ses artık Eray'a pek benzemiyor.
+Kelimeler aynı. Ama arasında bir şey var. Fazla uzun bir nefes. Fazla yakın.
+#say_d Açmayacak mısın, Zehra?
+#event knock
+#pause 3
+#shot esik_kara
+Eşiğe bakıyorsun.
+Tuz.
+Tuzun ince çizgisi… kararıyor.
+Kapının altından sızan ışığın değdiği yerden başlayarak, tane tane, siyaha dönüyor. Yanmış gibi. Çürümüş gibi.
+Ve kıpırdıyor. Sanki altında bir şey nefes alıyor.
+#pause 3
+Aç, Zehra. Tuz bitmeden aç. Yoksa içeri kendisi girer. Kendisi girerse, seni bana bırakmaz.
+#pause 2
+Hatice teyzenin sesi geliyor aklına. Davet etmedikçe giremez.
+Fısıltı… kimin tarafında, Zehra?
+#pause 3
+#shot pencere_yakin
+#event scratch
+Sonra pencereden bir ses.
+Cam. Tırnak. Yukarıdan aşağıya.
+#pause 2.5
+Bakma.
+#pause 1.5
+Bakıyorsun.
+#pause 2
+Camın arkasında bir yüz yok. Bir yüzün olması gereken yerde… sadece karanlık. Kendi nefesinin buğusundan daha karanlık.
+Ve o karanlık, camın öbür yüzünden, buğunun içine yavaş yavaş harfler yazıyor.
+Z.
+E.
+#pause 2
+Gözlerini kapatıyorsun.
+Ve anneannenin ninnisini söylemeye başlıyorsun. Hatırladığın kadarıyla. Sözlerini karıştırarak.
+#event lullaby
+#pause 6
+Ninni ilerledikçe tırnak sesi yavaşlıyor.
+Duruyor. Sonra yeniden başlıyor. Sonra yine duruyor.
+Fısıltı da susuyor. İlk kez. Bütün gece boyunca ilk kez.
+#pause 4
+#shot ev_ic
+Bir ara uyuyakalıyorsun.
+Ya da uyumuyorsun. Bilmiyorsun.
+#pause 3
+#shot safak
+Gözlerini açtığında pencereden gri bir ışık giriyor. Şafak.
+Kapı kapalı. Pencere sağlam. Saat yediyi geçiyor.
+Eşiğe bakıyorsun. Tuzun yarısı simsiyah.
+Ve siyah tuzun üstünde…
+#pause 2
+Çıplak ayak izleri.
+Ters dönmüş.
+#pause 3
+Dışarı çıkıyorsun. Ahırın yanında anneannenin eski arabası duruyor. Anahtarı kontağında, sanki biri senin için bırakmış gibi.
+Hatice teyzenin evinin perdeleri kapalı. Kapısı kilitli.
+Kapısının önünde, bir kâse su.
+#pause 2
+Telefonuna bakıyorsun. Gece Eray'dan on yedi cevapsız arama. Bir de mesaj: Yoldayım. Bekle.
+Ama şebeke hâlâ yok. Ona yazamıyorsun. Nerede olduğunu bilmiyorsun.
+Burada bekleyemezsin, Zehra. Bir gece daha olmaz.
+#pause 1.5
+Arabayı çalıştırıyorsun. İlk denemede çalışıyor.
+Köyden çıkan toprak yol sisle dolu. Farlar sisin içinde kayboluyor.
+Radyo kendiliğinden açılıyor. Cızırtı. Sonra anneannenin ninnisi. Senin sesinle. Gece söylediğin gibi, sözleri karıştırarak.
+Radyoyu kapatıyorsun. Ninni bir süre daha devam ediyor.
+#pause 2
+Dikiz aynasına bakmıyorsun.
+#pause 2
+Aferin, Zehra. Ben de sana bunu söyleyecektim.
+Bakma.
+#event drone_on

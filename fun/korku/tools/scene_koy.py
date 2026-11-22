@@ -252,4 +252,84 @@ elif SHOT == "pencere":
     cam = camera((0.1, 0.6, 1.3), (0, 2.0, 1.25), lens=32)
     handheld(cam, 0.002, 0.002, push=(0, 0.25, 0))
 
+elif SHOT in ("kapi", "esik_kara"):
+    interior()
+    for o in list(scn.objects):  # night: stove out
+        if o.type == "LIGHT" and o.data.type == "POINT" and o.location.z < 0.6:
+            o.data.energy = 1.5
+            o.data.animation_data_clear()
+    box("door", (0, 1.95, 1.0), (0.9, 0.05, 2.0), WOOD)
+    knob = cyl("knob", (0.32, 1.9, 1.0), 0.03, 0.1, METAL, rot=(math.radians(90), 0, 0))
+    box("sill", (0, 1.85, 0.03), (1.0, 0.2, 0.06), OLDWOOD)
+    gap = light("AREA", (0, 2.1, 0.02), 9, MOON, size=0.8)
+    shade = box("shade", (-1.2, 2.12, 0.15), (0.25, 0.05, 0.3), DARK)  # feet passing outside the gap
+    for f in range(1, FRAMES + 1):
+        k = f / FRAMES
+        shade.location.x = -1.2 + 2.4 * min(1, k * 1.6) if k < 0.62 else 0.0
+        shade.keyframe_insert("location", frame=f)
+    grains = []
+    random.seed(9)
+    for i in range(260):
+        bpy.ops.mesh.primitive_ico_sphere_add(radius=random.uniform(0.0025, 0.005), subdivisions=1,
+                                              location=(random.uniform(-0.45, 0.45), 1.78 + random.gauss(0, 0.012), 0.065))
+        g = bpy.context.object; g.data.materials.append(SALT); grains.append(g)
+    if SHOT == "esik_kara":
+        black = mat("burnt", (0.05, 0.02, 0.015), 0.35)
+        light("POINT", (0.1, 1.5, 0.5), 6, (0.9, 0.8, 0.7))
+        for g in grains:  # grains blacken from the centre outwards and twitch
+            t_black = 0.15 + 0.7 * abs(g.location.x) / 0.45
+            twin = g.copy(); twin.data = g.data.copy(); twin.data.materials[0] = black; scn.collection.objects.link(twin)
+            for o, vis_from in ((g, None), (twin, t_black)):
+                pass
+            g.hide_render = False; g.keyframe_insert("hide_render", frame=1)
+            g.hide_render = True; g.keyframe_insert("hide_render", frame=max(2, int(FRAMES * t_black)))
+            twin.hide_render = True; twin.keyframe_insert("hide_render", frame=1)
+            twin.hide_render = False; twin.keyframe_insert("hide_render", frame=max(2, int(FRAMES * t_black)))
+            base = twin.location.z
+            for f in range(1, FRAMES + 1, 2):
+                twin.location.z = base + (0.003 * random.random() if f > FRAMES * t_black else 0)
+                twin.keyframe_insert("location", frame=f)
+        cam = camera((0.2, 1.05, 0.32), (0, 1.85, 0.05), lens=42)
+        handheld(cam, 0.0015, 0.0015)
+    else:
+        for f in range(1, FRAMES + 1):  # the handle turns slowly, twice
+            knob.rotation_euler.y = math.radians(35) * max(0, math.sin(2 * math.pi * f / FRAMES * 2))
+            knob.keyframe_insert("rotation_euler", frame=f)
+        cam = camera((0.6, -0.6, 1.1), (0, 1.95, 0.9), lens=26)
+        handheld(cam, 0.003, 0.002)
+
+elif SHOT == "pencere_yakin":
+    interior()
+    bpy.data.objects.remove(scn.objects["window_glass"], do_unlink=True)
+    BG.default_value = (0.004, 0.006, 0.012, 1)
+    for o in list(scn.objects):  # night: stove out, only the moon outside
+        if o.type == "LIGHT" and o.data.type == "POINT":
+            o.data.energy = 0.8; o.data.animation_data_clear()
+    fb, fh = figure((0.05, 2.35, 0.0), 1.75)
+    for f in range(1, FRAMES + 1):
+        fh.location.y = 2.35 - 0.12 * f / FRAMES; fh.keyframe_insert("location", frame=f)
+    spot_at((1.5, 4.0, 2.5), (0, 2.3, 1.4), 60, 25, MOON)
+    cam = camera((0.05, 0.9, 1.4), (0.05, 2.0, 1.4), lens=35)
+    handheld(cam, 0.0015, 0.0015, push=(0, 0.2, 0))
+
+elif SHOT == "safak":
+    BG.default_value = (0.07, 0.065, 0.08, 1)
+    box("hill", (0, 5, -0.1), (60, 60, 0.2), GROUND)
+    box("house", (0, 6, 1.3), (6, 5, 2.6), PLASTER)
+    for side in (-1, 1):
+        box(f"roof{side}", (0, 6 + side * 1.35, 3.25), (6.6, 3.0, 0.12), OLDWOOD, rot=(math.radians(-30 * side), 0, 0))
+    box("door", (0.8, 3.47, 1.0), (0.9, 0.05, 2.0), WOOD)
+    cyl("trunk", (-2.6, 2.0, 1.4), 0.18, 2.8, OLDWOOD)
+    CAR = mat("car", (0.25, 0.22, 0.16), 0.5)
+    box("car_body", (3.4, 1.0, 0.55), (1.7, 4.0, 0.6), CAR)
+    box("car_cabin", (3.4, 0.8, 1.1), (1.5, 2.0, 0.55), CAR)
+    box("car_glass", (3.4, 0.8, 1.12), (1.52, 1.6, 0.4), GLASS)
+    for dx in (-0.85, 0.85):
+        for dy in (-0.4, 2.4):
+            cyl(f"wheel{dx}{dy}", (3.4 + dx, dy, 0.3), 0.3, 0.2, DARK, rot=(0, math.radians(90), 0))
+    sun = bpy.data.lights.new("dawn", "SUN"); sun.energy = 0.22; sun.color = (0.9, 0.75, 0.7)
+    so = bpy.data.objects.new("dawn", sun); scn.collection.objects.link(so); so.rotation_euler = (math.radians(80), 0, math.radians(-60))
+    cam = camera((-1.5, -6.5, 1.6), (2.0, 4, 1.0), lens=28)
+    handheld(cam, 0.008, 0.002, push=(0.6, 0.6, 0))
+
 bpy.ops.render.render(animation=True)
