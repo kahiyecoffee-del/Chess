@@ -304,7 +304,7 @@ def build(eid):
             filt = "[0:v]loop=loop=-1:size=9999,"
         filt += (f"fps=24,trim=duration={dur:.3f},setpts=PTS-STARTPTS,hqdn3d=4:3:6:6,"
                  f"eq=gamma={GAMMA.get(name.rstrip('0123456789'), 1.45)}:contrast=1.04:brightness=0.02:saturation=0.9,"
-                 "noise=alls=9:allf=t,vignette=PI/5.5,"
+                 "noise=alls=6:allf=t,vignette=PI/5.5,"
                  f"fade=t=in:st=0:d=0.6,fade=t=out:st={max(0, dur - 0.5):.3f}:d=0.5[v]")
         subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-framerate", str(SHOT_FPS), "-i", src,
                         "-filter_complex", filt, "-map", "[v]", "-c:v", "libx264", "-pix_fmt", "yuv420p",
@@ -314,8 +314,8 @@ def build(eid):
     OUT.mkdir(exist_ok=True)
     out = OUT / f"{eid}.mp4"
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(work / "segs.txt"),
-                    "-i", str(work / "audio.wav"), "-c:v", "libx264", "-crf", "28", "-maxrate", "650k", "-bufsize", "1300k",
-                    "-preset", "slow", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "96k", "-movflags", "+faststart",
+                    "-i", str(work / "audio.wav"), "-c:v", "libx264", "-crf", "30", "-maxrate", "320k", "-bufsize", "640k",
+                    "-preset", "slow", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "80k", "-movflags", "+faststart",
                     "-shortest", str(out)], check=True)
     print(json.dumps({"episode": eid, "seconds": round(total, 1), "shots": shots, "file": str(out)}))
 
