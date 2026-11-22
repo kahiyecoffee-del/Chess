@@ -21,7 +21,8 @@ OUT = ROOT / "player"
 SR = 44100
 SHOT_FPS = 12
 GAMMA = {"kampus": 1.05, "telefon": 1.0, "mesaj": 1.0, "koridor": 1.1, "sabah": 1.2, "yol": 1.35, "koy_dis": 1.1,
-         "ev_ic": 1.15, "hatice": 1.15, "esik": 1.1, "tavan_arasi": 1.15, "pencere": 1.25}
+         "ev_ic": 1.15, "hatice": 1.15, "esik": 1.1, "tavan_arasi": 1.15, "pencere": 1.25,
+         "kapi": 1.3, "esik_kara": 1.15, "pencere_yakin": 1.2, "safak": 1.05, "arama": 1.0}
 
 EPISODES = {
     "b1": {"title": "1. Bölüm — 03.00", "tail": 4.0, "beats": [
